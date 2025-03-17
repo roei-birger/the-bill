@@ -217,6 +217,14 @@ main {
   display: block;
 }
 
+/* Tab header with actions */
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
 /* ===== Cards ===== */
 .card {
   background-color: var(--card-background);
@@ -333,11 +341,12 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--card-background);
+  background-color: var (--card-background);
   border-radius: var(--border-radius);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-sm);
   box-shadow: var(--shadow);
+  cursor: grab;
 }
 
 .member-info {
@@ -600,11 +609,126 @@ select:focus {
   color: var(--danger-color);
 }
 
+/* Summary Modal */
+.summary-modal-content {
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.summary-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--spacing-md);
+}
+
+.summary-content {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  white-space: pre-wrap;
+  font-family: monospace;
+  direction: rtl;
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+  max-height: 60vh;
+}
+
+/* Help Modal */
+.help-modal-content {
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  direction: rtl;
+}
+
+.help-content {
+  text-align: right;
+}
+
+.help-content h4 {
+  margin-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.help-content ul {
+  list-style-position: inside;
+  margin-bottom: var(--spacing-md);
+}
+
+.help-content li {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Member merging */
+.merge-members-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--spacing-md) 0;
+}
+
+.member-merge-item {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  width: 40%;
+  text-align: center;
+}
+
+.merge-arrow {
+  font-size: 1.5rem;
+  margin: 0 var(--spacing-md);
+  color: var(--primary-color);
+}
+
+.merge-warning {
+  color: var(--danger-color);
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.member-item.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+  outline: 2px dashed var(--primary-color);
+}
+
+.member-item.drop-target {
+  outline: 2px solid var(--primary-color);
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Count badge */
+.count-badge {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  margin-right: var(--spacing-xs);
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+}
+
 /* ===== Info Sections ===== */
 .info-row {
   display: flex;
   padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var (--border-color);
 }
 
 .info-row:last-child {
@@ -631,7 +755,7 @@ select:focus {
 .message {
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var (--spacing-md);
   display: none;
   animation: fadeIn 0.3s ease;
 }
@@ -837,4 +961,26 @@ select:focus {
   width: 24px;
   height: 24px;
   margin-left: var(--spacing-xs);
+}
+
+.highlight {
+  font-weight: bold;
+  color: var(--danger-color);
+}
+
+.warning {
+  color: var(--danger-color);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Style for the edit group button */
+#edit-group-btn {
+  margin-right: auto;
+}
+
+/* Ensure that the action buttons in the group header have enough space */
+.screen-header .action-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }

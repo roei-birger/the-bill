@@ -153,7 +153,7 @@ function showSuccess(message) {
     }
 }
 
-// Screen Management
+// Revert showScreen to the original implementation
 function showScreen(screenId) {
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
@@ -196,6 +196,22 @@ function renderGroupsList() {
     });
 }
 
+// Update tab counts
+function updateTabCounts() {
+    // Update members count
+    const membersCount = document.getElementById('members-count');
+    if (membersCount) {
+        membersCount.textContent = TheBill.members ? TheBill.members.length : 0;
+    }
+    
+    // Update payments count
+    const paymentsCount = document.getElementById('payments-count');
+    if (paymentsCount) {
+        paymentsCount.textContent = TheBill.payments ? TheBill.payments.length : 0;
+    }
+}
+
+// Update the renderMembers function to add drag-and-drop functionality
 function renderMembers() {
     const membersList = document.getElementById('members-list');
     if (!membersList || !TheBill.members) return;
@@ -215,6 +231,8 @@ function renderMembers() {
         
         const memberItem = document.createElement('div');
         memberItem.className = 'member-item';
+        memberItem.setAttribute('draggable', 'true');
+        memberItem.dataset.member = fullName;
         memberItem.innerHTML = `
             <div class="member-info">
                 <div class="member-avatar">${initials}</div>
@@ -229,8 +247,19 @@ function renderMembers() {
         // Add click event to view member details
         memberItem.addEventListener('click', () => loadMemberDetails(fullName));
         
+        // Add drag events for member merging
+        memberItem.addEventListener('dragstart', handleDragStart);
+        memberItem.addEventListener('dragend', handleDragEnd);
+        memberItem.addEventListener('dragover', handleDragOver);
+        memberItem.addEventListener('dragenter', handleDragEnter);
+        memberItem.addEventListener('dragleave', handleDragLeave);
+        memberItem.addEventListener('drop', handleDrop);
+        
         membersList.appendChild(memberItem);
     });
+    
+    // Update tab counts
+    updateTabCounts();
 }
 
 function renderPayments() {
@@ -367,6 +396,9 @@ async function loadGroup(groupName) {
         renderMembers();
         renderPayments();
         
+        // Update tab counts
+        updateTabCounts();
+        
         // Show group screen
         showScreen('group-screen');
         
@@ -463,7 +495,11 @@ function loadPaymentDetails(paymentId) {
     const payment = TheBill.payments.find(p => p.id === paymentId);
     if (!payment) return;
     
-    document.getElementById('payment-title').textContent = payment.title;
+    // Store the payment ID in the title element for later reference
+    const titleElement = document.getElementById('payment-title');
+    titleElement.textContent = payment.title;
+    titleElement.setAttribute('data-payment-id', paymentId);
+    
     document.getElementById('payment-amount').textContent = formatCurrency(payment.amount);
     document.getElementById('payment-payer').textContent = payment.payer_name;
     document.getElementById('payment-date').textContent = formatDate(payment.date);
@@ -696,7 +732,7 @@ function initializeEventListeners() {
         });
     });
 
-    // Back buttons
+    // Back buttons - Revert to simple navigation
     document.querySelectorAll('.back-btn').forEach(button => {
         button.addEventListener('click', () => {
             const targetScreen = button.getAttribute('data-target') || 'groups-screen';
@@ -722,6 +758,568 @@ function initializeEventListeners() {
                 showError(error.message || "שגיאה בייצוא הנתונים");
             }
         });
+    }
+    
+    // Export member summaries button
+    const exportSummaryBtn = document.getElementById('export-summary-btn');
+    if (exportSummaryBtn) {
+        exportSummaryBtn.addEventListener('click', async () => {
+            try {
+                if (!TheBill.currentGroup || !TheBill.members || TheBill.members.length === 0) {
+                    showError("אין נתונים להצגה");
+                    return;
+                }
+                
+                const summaryText = await generateMembersSummary();
+                showSummaryModal(summaryText);
+                
+            } catch (error) {
+                console.error("Error generating summary:", error);
+                showError("שגיאה בייצוא סיכום תשלומים");
+            }
+        });
+    }
+
+    // Edit payment functionality
+    document.getElementById('edit-payment-btn')?.addEventListener('click', () => {
+        console.log("Edit payment button clicked");
+        const paymentId = document.getElementById('payment-title').getAttribute('data-payment-id');
+        const payment = TheBill.payments.find(p => p.id === paymentId);
+        
+        if (!payment) {
+            showError("לא נמצאו פרטי תשלום");
+            return;
+        }
+        
+        // Set form values
+        document.getElementById('edit-payment-id').value = payment.id;
+        document.getElementById('edit-payment-title').value = payment.title;
+        document.getElementById('edit-payment-amount').value = payment.amount;
+        document.getElementById('edit-payment-desc').value = payment.description || '';
+        
+        // Populate payer dropdown
+        const payerSelect = document.getElementById('edit-payment-payer');
+        payerSelect.innerHTML = '';
+        
+        TheBill.members.forEach(member => {
+            const fullName = `${member.first_name} ${member.last_name}`;
+            const option = document.createElement('option');
+            option.value = fullName;
+            option.textContent = fullName;
+            option.selected = (fullName === payment.payer_name);
+            payerSelect.appendChild(option);
+        });
+        
+        // Populate participants checkboxes
+        const participantsDiv = document.getElementById('edit-payment-participants');
+        participantsDiv.innerHTML = '';
+        
+        TheBill.members.forEach(member => {
+            const fullName = `${member.first_name} ${member.last_name}`;
+            
+            const checkboxItem = document.createElement('div');
+            checkboxItem.className = 'checkbox-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `edit-participant-${fullName}`;
+            checkbox.name = 'participants';
+            checkbox.value = fullName;
+            checkbox.checked = payment.participants.includes(fullName);
+            
+            const label = document.createElement('label');
+            label.htmlFor = `edit-participant-${fullName}`;
+            label.textContent = fullName;
+            
+            checkboxItem.appendChild(checkbox);
+            checkboxItem.appendChild(label);
+            participantsDiv.appendChild(checkboxItem);
+        });
+        
+        openModal('edit-payment-modal');
+    });
+    
+    // Delete payment functionality
+    document.getElementById('delete-payment-btn')?.addEventListener('click', async () => {
+        console.log("Delete payment button clicked");
+        const paymentId = document.getElementById('payment-title').getAttribute('data-payment-id');
+        const payment = TheBill.payments.find(p => p.id === paymentId);
+        
+        if (!payment) {
+            showError("לא נמצאו פרטי תשלום");
+            return;
+        }
+        
+        if (confirm(`האם אתה בטוח שברצונך למחוק את התשלום "${payment.title}"?`)) {
+            try {
+                await API.deletePayment(TheBill.currentGroup.name, paymentId);
+                showSuccess("התשלום נמחק בהצלחה");
+                
+                // Reload group data and return to group screen
+                await API.loadGroup(TheBill.currentGroup.name);
+                renderPayments();
+                renderMembers();
+                showScreen('group-screen');
+            } catch (error) {
+                showError(error.message || "שגיאה במחיקת התשלום");
+            }
+        }
+    });
+    
+    // Edit payment form submission
+    document.getElementById('edit-payment-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("Edit payment form submitted");
+        
+        const paymentId = document.getElementById('edit-payment-id').value;
+        const title = document.getElementById('edit-payment-title').value;
+        const amount = parseFloat(document.getElementById('edit-payment-amount').value);
+        const payerName = document.getElementById('edit-payment-payer').value;
+        const description = document.getElementById('edit-payment-desc').value;
+        
+        // Get selected participants
+        const participants = [];
+        document.querySelectorAll('#edit-payment-participants input[type="checkbox"]:checked').forEach(checkbox => {
+            participants.push(checkbox.value);
+        });
+        
+        if (participants.length === 0) {
+            showError("יש לבחור לפחות משתתף אחד");
+            return;
+        }
+        
+        try {
+            await API.editPayment(
+                TheBill.currentGroup.name, 
+                paymentId, 
+                title, 
+                amount, 
+                payerName, 
+                participants, 
+                description
+            );
+            
+            closeModal('edit-payment-modal');
+            showSuccess(`התשלום "${title}" עודכן בהצלחה`);
+            
+            // Reload current group and update UI
+            await API.loadGroup(TheBill.currentGroup.name);
+            
+            // If we're on the payment screen, refresh the payment details
+            if (document.getElementById('payment-screen').classList.contains('active')) {
+                loadPaymentDetails(paymentId);
+            } else {
+                renderMembers();
+                renderPayments();
+            }
+        } catch (error) {
+            showError(error.message || "שגיאה בעדכון התשלום");
+        }
+    });
+    
+    // Edit member functionality
+    document.getElementById('edit-member-btn')?.addEventListener('click', () => {
+        console.log("Edit member button clicked");
+        const memberFullName = document.getElementById('member-name').textContent;
+        const member = TheBill.members.find(m => 
+            `${m.first_name} ${m.last_name}` === memberFullName);
+        
+        if (!member) {
+            showError("לא נמצאו פרטי חבר");
+            return;
+        }
+        
+        // Set form values
+        document.getElementById('edit-member-old-name').value = memberFullName;
+        document.getElementById('edit-first-name').value = member.first_name;
+        document.getElementById('edit-last-name').value = member.last_name;
+        
+        // Set permissions
+        const canAddPayments = TheBill.currentGroup.permissions[memberFullName] !== false;
+        document.getElementById('edit-member-permissions').value = canAddPayments ? 'true' : 'false';
+        
+        openModal('edit-member-modal');
+    });
+    
+    // Delete member functionality
+    document.getElementById('remove-member-btn')?.addEventListener('click', async () => {
+        console.log("Remove member button clicked");
+        const memberFullName = document.getElementById('member-name').textContent;
+        
+        if (!memberFullName) {
+            showError("לא נמצאו פרטי חבר");
+            return;
+        }
+        
+        if (confirm(`האם אתה בטוח שברצונך להסיר את ${memberFullName} מהקבוצה?`)) {
+            try {
+                await API.removeMember(TheBill.currentGroup.name, memberFullName);
+                showSuccess(`${memberFullName} הוסר מהקבוצה בהצלחה`);
+                
+                // Reload group data and return to group screen
+                await API.loadGroup(TheBill.currentGroup.name);
+                renderMembers();
+                showScreen('group-screen');
+            } catch (error) {
+                showError(error.message || "שגיאה בהסרת החבר");
+            }
+        }
+    });
+    
+    // Edit member form submission
+    document.getElementById('edit-member-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("Edit member form submitted");
+        
+        const oldFullName = document.getElementById('edit-member-old-name').value;
+        const newFirstName = document.getElementById('edit-first-name').value;
+        const newLastName = document.getElementById('edit-last-name').value;
+        const canAddPayments = document.getElementById('edit-member-permissions').value === 'true';
+        
+        try {
+            // Update member details
+            await API.editMember(TheBill.currentGroup.name, oldFullName, newFirstName, newLastName);
+            
+            // Update permissions
+            const newFullName = `${newFirstName} ${newLastName}`;
+            await API.setPermissions(TheBill.currentGroup.name, newFullName, canAddPayments);
+            
+            closeModal('edit-member-modal');
+            showSuccess("פרטי החבר עודכנו בהצלחה");
+            
+            // Reload current group and update UI
+            await API.loadGroup(TheBill.currentGroup.name);
+            
+            // If we're on the member screen, refresh the member details
+            if (document.getElementById('member-screen').classList.contains('active')) {
+                loadMemberDetails(`${newFirstName} ${newLastName}`);
+            } else {
+                renderMembers();
+            }
+        } catch (error) {
+            showError(error.message || "שגיאה בעדכון פרטי החבר");
+        }
+    });
+
+    // Edit group button
+    document.getElementById('edit-group-btn')?.addEventListener('click', () => {
+        if (!TheBill.currentGroup) return;
+        
+        // Set current group name
+        document.getElementById('edit-group-name').value = TheBill.currentGroup.name;
+        
+        // Open edit modal
+        openModal('edit-group-modal');
+    });
+    
+    // Edit group form submission
+    document.getElementById('edit-group-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const oldGroupName = TheBill.currentGroup.name;
+        const newGroupName = document.getElementById('edit-group-name').value.trim();
+        
+        if (!newGroupName) {
+            showError("שם הקבוצה אינו יכול להיות ריק");
+            return;
+        }
+        
+        try {
+            await API.editGroupName(oldGroupName, newGroupName);
+            closeModal('edit-group-modal');
+            showSuccess(`שם הקבוצה שונה ל-"${newGroupName}"`);
+            
+            // Update UI
+            document.getElementById('group-name').textContent = newGroupName;
+            
+            // Reload groups list for sidebar
+            await API.loadGroups();
+        } catch (error) {
+            showError(error.message || "שגיאה בעדכון שם הקבוצה");
+        }
+    });
+    
+    // Delete group button
+    document.getElementById('delete-group-btn')?.addEventListener('click', () => {
+        if (!TheBill.currentGroup) return;
+        
+        // Set group name in confirmation dialog
+        document.getElementById('delete-group-name').textContent = TheBill.currentGroup.name;
+        
+        // Open delete modal
+        openModal('delete-group-modal');
+    });
+    
+    // Confirm delete group button
+    document.getElementById('confirm-delete-group-btn')?.addEventListener('click', async () => {
+        if (!TheBill.currentGroup) return;
+        
+        try {
+            await API.deleteGroup(TheBill.currentGroup.name);
+            closeModal('delete-group-modal');
+            showSuccess(`הקבוצה "${TheBill.currentGroup.name}" נמחקה בהצלחה`);
+            
+            // Return to groups screen and reload groups
+            showScreen('groups-screen', true); // Reset history
+            await API.loadGroups();
+            renderGroupsList();
+        } catch (error) {
+            showError(error.message || "שגיאה במחיקת הקבוצה");
+        }
+    });
+
+    // Close modal button (fix for cancel button in merge modal)
+    document.querySelectorAll('.close-modal-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    
+    // Help button
+    document.getElementById('help-btn')?.addEventListener('click', () => {
+        openModal('help-modal');
+    });
+}
+
+// Generate detailed text summaries for all members
+async function generateMembersSummary() {
+    if (!TheBill.currentGroup || !TheBill.members || TheBill.members.length === 0) {
+        throw new Error("אין נתונים להצגה");
+    }
+    
+    const groupName = TheBill.currentGroup.name;
+    let allMembersSummary = `📊 סיכום תשלומים לקבוצה: ${groupName} 📊\n`;
+    allMembersSummary += `${new Date().toLocaleDateString('he-IL')}\n\n`;
+    
+    // Get all transfers
+    const transfers = await API.getTransfers(groupName);
+    
+    // Calculate group totals
+    let totalPaid = 0;
+    let totalDue = 0;
+    let totalToReceive = 0;
+    
+    // Process each member
+    for (const member of TheBill.members) {
+        const fullName = `${member.first_name} ${member.last_name}`;
+        const memberSummary = await API.getMemberSummary(groupName, fullName);
+        
+        // Get total paid by this member
+        let memberPaid = 0;
+        if (memberSummary.related_payments.paid_by_member && memberSummary.related_payments.paid_by_member.length > 0) {
+            memberPaid = memberSummary.related_payments.paid_by_member.reduce((total, payment) => total + payment.amount, 0);
+        }
+        totalPaid += memberPaid;
+        
+        // Track amounts to pay or receive
+        if (member.balance < 0) {
+            totalDue += Math.abs(member.balance);
+        } else if (member.balance > 0) {
+            totalToReceive += member.balance;
+        }
+    }
+    
+    // Add overall group summary
+    allMembersSummary += `🔸 סה״כ הוצאות בקבוצה: ${formatCurrency(totalPaid)}\n`;
+    allMembersSummary += `🔸 סה״כ לתשלום: ${formatCurrency(totalDue)}\n`;
+    allMembersSummary += `🔸 סה״כ לקבלה: ${formatCurrency(totalToReceive)}\n\n`;
+    allMembersSummary += `--- פירוט לפי חבר ---\n\n`;
+    
+    // Process each member
+    for (const member of TheBill.members) {
+        const fullName = `${member.first_name} ${member.last_name}`;
+        const memberSummary = await API.getMemberSummary(groupName, fullName);
+        
+        allMembersSummary += `👤 ${fullName}\n`;
+        
+        // Add balance information
+        if (member.balance > 0) {
+            allMembersSummary += `💰 מאזן: ${formatCurrency(member.balance)} (לקבל)\n`;
+        } else if (member.balance < 0) {
+            allMembersSummary += `💸 מאזן: ${formatCurrency(member.balance)} (לשלם)\n`;
+        } else {
+            allMembersSummary += `⚖️ מאזן: ${formatCurrency(member.balance)} (מאוזן)\n`;
+        }
+        
+        // Get total paid by this member
+        let memberPaid = 0;
+        if (memberSummary.related_payments.paid_by_member && memberSummary.related_payments.paid_by_member.length > 0) {
+            memberPaid = memberSummary.related_payments.paid_by_member.reduce((total, payment) => total + payment.amount, 0);
+            allMembersSummary += `📥 סה״כ שולם: ${formatCurrency(memberPaid)}\n`;
+        }
+        
+        // Add payment details
+        if (memberSummary.transfers.pays_to && memberSummary.transfers.pays_to.length > 0) {
+            allMembersSummary += `📤 לשלם:\n`;
+            let totalToPay = 0;
+            memberSummary.transfers.pays_to.forEach(transfer => {
+                allMembersSummary += `   • ל${transfer.to}: ${formatCurrency(transfer.amount)}\n`;
+                totalToPay += transfer.amount;
+            });
+            allMembersSummary += `   • סה״כ לשלם: ${formatCurrency(totalToPay)}\n`;
+        }
+        
+        if (memberSummary.transfers.receives_from && memberSummary.transfers.receives_from.length > 0) {
+            allMembersSummary += `📥 לקבל:\n`;
+            let totalToReceive = 0;
+            memberSummary.transfers.receives_from.forEach(transfer => {
+                allMembersSummary += `   • מ${transfer.from}: ${formatCurrency(transfer.amount)}\n`;
+                totalToReceive += transfer.amount;
+            });
+            allMembersSummary += `   • סה״כ לקבל: ${formatCurrency(totalToReceive)}\n`;
+        }
+        
+        allMembersSummary += `\n`;
+    }
+    
+    allMembersSummary += `----------------------------------\n`;
+    allMembersSummary += `הופק באמצעות The bill`;
+    
+    return allMembersSummary;
+}
+
+// Copy text to clipboard
+function copyToClipboard(text) {
+    // Create temporary textarea element
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    
+    // Select and copy
+    textarea.select();
+    document.execCommand('copy');
+    
+    // Clean up
+    document.body.removeChild(textarea);
+}
+
+// Show the enhanced summary in modal with copy button
+function showSummaryModal(summaryText) {
+    // Create modal if it doesn't exist (though we now have it in HTML)
+    const summaryModal = document.getElementById('summary-modal');
+    const summaryContent = document.getElementById('summary-content');
+    
+    // Set the summary text
+    summaryContent.textContent = summaryText;
+    
+    // Setup copy button
+    const copyButton = document.getElementById('copy-summary-btn');
+    copyButton.onclick = () => {
+        copyToClipboard(summaryText);
+        copyButton.innerHTML = '<i class="fas fa-check"></i> הועתק';
+        setTimeout(() => {
+            copyButton.innerHTML = '<i class="fas fa-copy"></i> העתק ללוח';
+        }, 2000);
+        showSuccess("הסיכום הועתק ללוח");
+    };
+    
+    // Display modal
+    summaryModal.style.display = 'flex';
+}
+
+// Drag and Drop Functions for Member Merging
+let draggedMember = null;
+
+function handleDragStart(e) {
+    draggedMember = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.member);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    
+    // Remove drop target highlighting from all members
+    document.querySelectorAll('.member-item').forEach(item => {
+        item.classList.remove('drop-target');
+    });
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault(); // Allow drop
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragEnter(e) {
+    // Only highlight if this is a different member
+    if (this !== draggedMember) {
+        this.classList.add('drop-target');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drop-target');
+}
+
+function handleDrop(e) {
+    e.stopPropagation();
+    
+    // Only proceed if dragged to another member
+    if (draggedMember !== this) {
+        const fromMember = draggedMember.dataset.member;
+        const toMember = this.dataset.member;
+        
+        // Show confirmation modal
+        showMergeMembersModal(fromMember, toMember);
+    }
+    
+    return false;
+}
+
+function showMergeMembersModal(fromMember, toMember) {
+    // Populate modal with member info
+    document.getElementById('member-to-merge-from').textContent = fromMember;
+    document.getElementById('member-to-merge-to').textContent = toMember;
+    
+    // Setup confirmation button
+    const confirmBtn = document.getElementById('confirm-merge-btn');
+    confirmBtn.onclick = async () => {
+        try {
+            await mergeMembers(fromMember, toMember);
+            closeModal('merge-members-modal');
+            showSuccess(`${fromMember} אוחד בהצלחה עם ${toMember}`);
+        } catch (error) {
+            showError(error.message || "שגיאה באיחוד החברים");
+        }
+    };
+    
+    // Open the modal
+    openModal('merge-members-modal');
+}
+
+// Enhanced member merging to combine names and treat as single unit
+async function mergeMembers(fromMember, toMember) {
+    try {
+        if (!TheBill.currentGroup) {
+            throw new Error("לא נבחרה קבוצה");
+        }
+        
+        console.log(`Attempting to merge ${fromMember} into ${toMember}`);
+        
+        // Format the combined name for the API
+        const combinedName = `${fromMember} + ${toMember}`;
+        
+        const result = await API.mergeMembers(TheBill.currentGroup.name, fromMember, toMember, combinedName);
+        
+        // Reload group data after successful merge
+        if (result) {
+            await API.loadGroup(TheBill.currentGroup.name);
+            renderMembers();
+            renderPayments();
+            renderGroupTransfers();
+        }
+        
+        return result;
+    } catch (error) {
+        console.error("Error merging members:", error);
+        throw error;
     }
 }
 
@@ -780,6 +1378,70 @@ API.getPaymentBreakdown = async (groupName, paymentId) => {
         return result.breakdown;
     } catch (error) {
         console.error("Error getting payment breakdown:", error);
+        throw error;
+    }
+};
+
+// Fix API.editPayment to match the Python function signature
+API.editPayment = async (groupName, paymentId, title, amount, payerName, participants, description) => {
+    try {
+        console.log("Editing payment:", {groupName, paymentId, title, amount, payerName, participants, description});
+        const result = await eel.edit_payment(
+            groupName, paymentId, title, amount, payerName, participants, description
+        )();
+        console.log("Edit payment response:", result);
+        if (!result.success) throw new Error(result.error || "שגיאה בעדכון התשלום");
+        return result.payment;
+    } catch (error) {
+        console.error("Error in editPayment:", error);
+        throw error;
+    }
+};
+
+// Add permissions API
+API.setPermissions = async (groupName, memberFullName, canAddPayments) => {
+    try {
+        console.log("Setting permissions:", {groupName, memberFullName, canAddPayments});
+        const result = await eel.set_permissions(groupName, memberFullName, canAddPayments)();
+        console.log("Set permissions response:", result);
+        if (!result.success) throw new Error(result.error || "שגיאה בהגדרת הרשאות");
+        return true;
+    } catch (error) {
+        console.error("Error in setPermissions:", error);
+        throw error;
+    }
+};
+
+// Update API.mergeMembers to handle the combined name
+API.mergeMembers = async (groupName, fromMember, toMember, combinedName = null) => {
+    try {
+        console.log("Merging members:", {groupName, fromMember, toMember, combinedName});
+        const result = await eel.merge_members(groupName, fromMember, toMember, combinedName)();
+        console.log("Merge members response:", result);
+        if (!result.success) throw new Error(result.error || "שגיאה באיחוד החברים");
+        return true;
+    } catch (error) {
+        console.error("Error in mergeMembers:", error);
+        throw error;
+    }
+};
+
+// Update API functions section
+API.editGroupName = async (oldName, newName) => {
+    try {
+        console.log("Editing group name:", {oldName, newName});
+        const result = await eel.edit_group_name(oldName, newName)();
+        console.log("Edit group name response:", result);
+        if (!result.success) throw new Error(result.error || "שגיאה בעדכון שם הקבוצה");
+        
+        // Update TheBill.currentGroup
+        if (TheBill.currentGroup && TheBill.currentGroup.name === oldName) {
+            TheBill.currentGroup.name = newName;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Error in editGroupName:", error);
         throw error;
     }
 };

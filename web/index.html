@@ -25,7 +25,7 @@
     <div id="app-container">
         <!-- Header -->
         <header>
-            <h1>TheBill</h1>
+            <h1>The bill</h1>
             <h2>ניהול הוצאות משותפות</h2>
         </header>
 
@@ -48,30 +48,42 @@
                     <button class="back-btn" data-target="groups-screen">חזרה</button>
                     <h3 id="group-name">שם הקבוצה</h3>
                     <div class="action-buttons">
-                        <button id="add-member-btn" class="secondary-btn">הוספת חבר</button>
-                        <button id="add-payment-btn" class="primary-btn">תשלום חדש</button>
+                        <button id="help-btn" class="secondary-btn"><i class="fas fa-question-circle"></i> עזרה</button>
+                        <button id="edit-group-btn" class="secondary-btn"><i class="fas fa-edit"></i> עריכה</button>
+                        <button id="delete-group-btn" class="danger-btn"><i class="fas fa-trash"></i> מחיקה</button>
                     </div>
                 </div>
 
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="members">חברים</button>
-                    <button class="tab-btn" data-tab="payments">תשלומים</button>
+                    <button class="tab-btn active" data-tab="members">
+                        חברים <span class="count-badge" id="members-count">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="payments">
+                        תשלומים <span class="count-badge" id="payments-count">0</span>
+                    </button>
                     <button class="tab-btn" data-tab="balance">איזון</button>
                 </div>
 
                 <div id="members-tab" class="tab-content active">
+                    <div class="tab-header">
+                        <h4>חברי הקבוצה</h4>
+                        <button id="add-member-btn" class="primary-btn"> הוסף חבר</button>
+                    </div>
                     <div id="members-list" class="items-list">
                         <!-- Members will be added dynamically -->
                     </div>
                 </div>
 
                 <div id="payments-tab" class="tab-content">
-                    <div class="filter-controls">
-                        <select id="payment-filter">
-                            <option value="all">כל התשלומים</option>
-                            <option value="my-expenses">התשלומים שלי</option>
-                            <option value="involving-me">שילמו עבורי</option>
-                        </select>
+                    <div class="tab-header">
+                        <div class="filter-controls">
+                            <select id="payment-filter">
+                                <option value="all">כל התשלומים</option>
+                                <option value="my-expenses">התשלומים שלי</option>
+                                <option value="involving-me">שילמו עבורי</option>
+                            </select>
+                        </div>
+                        <button id="add-payment-btn" class="primary-btn"> הוסף תשלום</button>
                     </div>
                     <div id="payments-list" class="items-list">
                         <!-- Payments will be added dynamically -->
@@ -81,7 +93,10 @@
                 <div id="balance-tab" class="tab-content">
                     <div class="section-title">
                         <h4>סיכום העברות כספים</h4>
-                        <button id="export-data-btn" class="secondary-btn small">ייצוא נתונים</button>
+                        <div class="action-buttons">
+                            <button id="export-summary-btn" class="secondary-btn small">ייצוא סיכום לחברים</button>
+                            <button id="export-data-btn" class="secondary-btn small">ייצוא נתונים</button>
+                        </div>
                     </div>
                     <div id="transfers-list" class="items-list">
                         <!-- Transfers will be added dynamically -->
@@ -333,6 +348,106 @@
                 </div>
                 <button type="submit" class="primary-btn">שמור שינויים</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Summary Export Modal -->
+    <div id="summary-modal" class="modal">
+        <div class="modal-content summary-modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>סיכום תשלומים לחברים</h3>
+            <div class="summary-actions">
+                <button id="copy-summary-btn" class="primary-btn">
+                    <i class="fas fa-copy"></i> העתק ללוח
+                </button>
+            </div>
+            <pre id="summary-content" class="summary-content"></pre>
+        </div>
+    </div>
+
+    <!-- Member Merge Modal -->
+    <div id="merge-members-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>איחוד חברים</h3>
+            <p>האם אתה בטוח שברצונך לאחד את החברים הבאים?</p>
+            <div class="merge-members-list">
+                <div id="member-to-merge-from" class="member-merge-item"></div>
+                <div class="merge-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div id="member-to-merge-to" class="member-merge-item"></div>
+            </div>
+            <p class="merge-warning">שים לב! פעולה זו לא ניתנת לביטול.</p>
+            <div class="modal-actions">
+                <button id="confirm-merge-btn" class="primary-btn">אישור איחוד</button>
+                <button class="secondary-btn close-modal-btn">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Group Modal -->
+    <div id="edit-group-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>עריכת פרטי קבוצה</h3>
+            <form id="edit-group-form">
+                <div class="form-group">
+                    <label for="edit-group-name">שם הקבוצה</label>
+                    <input type="text" id="edit-group-name" required>
+                </div>
+                <button type="submit" class="primary-btn">שמור שינויים</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Group Modal -->
+    <div id="delete-group-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>מחיקת קבוצה</h3>
+            <p>האם אתה בטוח שברצונך למחוק את הקבוצה <span id="delete-group-name" class="highlight"></span>?</p>
+            <p class="warning">שים לב! פעולה זו אינה ניתנת לביטול.</p>
+            <div class="modal-actions">
+                <button id="confirm-delete-group-btn" class="danger-btn">כן, מחק קבוצה</button>
+                <button class="secondary-btn close-modal-btn">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content help-modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>מדריך שימוש - TheBill</h3>
+            <div class="help-content">
+                <h4>ניהול קבוצות</h4>
+                <ul>
+                    <li><strong>יצירת קבוצה:</strong> לחץ על "קבוצה חדשה" במסך הראשי, הזן את הפרטים ולחץ "צור קבוצה"</li>
+                    <li><strong>עריכת קבוצה:</strong> לחץ על "עריכה" בכותרת הקבוצה, שנה את השם ולחץ "שמור שינויים"</li>
+                    <li><strong>מחיקת קבוצה:</strong> לחץ על "מחיקה" בכותרת הקבוצה (אפשרי רק כאשר כל היתרות מאופסות)</li>
+                </ul>
+                
+                <h4>ניהול חברים</h4>
+                <ul>
+                    <li><strong>הוספת חבר:</strong> עבור ללשונית "חברים", לחץ על "הוסף חבר", הזן את הפרטים ולחץ "הוסף חבר"</li>
+                    <li><strong>עריכת חבר:</strong> לחץ על החבר שברצונך לערוך, לחץ "עריכה", שנה את הפרטים ולחץ "שמור שינויים"</li>
+                    <li><strong>הסרת חבר:</strong> לחץ על החבר שברצונך להסיר, לחץ "הסרה" (אפשרי כשהיתרה 0)</li>
+                    <li><strong>איחוד חברים:</strong> גרור חבר אחד אל חבר אחר כדי לאחד אותם ליחידה כלכלית אחת</li>
+                </ul>
+                
+                <h4>ניהול תשלומים</h4>
+                <ul>
+                    <li><strong>הוספת תשלום:</strong> עבור ללשונית "תשלומים", לחץ "הוסף תשלום", מלא את הפרטים ולחץ "הוסף תשלום"</li>
+                    <li><strong>עריכת תשלום:</strong> לחץ על התשלום, לחץ "עריכה", שנה את הפרטים ולחץ "שמור שינויים"</li>
+                    <li><strong>מחיקת תשלום:</strong> לחץ על התשלום, לחץ "מחיקה" ואשר את המחיקה</li>
+                </ul>
+                
+                <h4>איזון וייצוא</h4>
+                <ul>
+                    <li><strong>צפייה בהעברות:</strong> עבור ללשונית "איזון" לצפייה בהעברות הכספים המומלצות</li>
+                    <li><strong>ייצוא סיכום:</strong> בלשונית "איזון", לחץ על "ייצוא סיכום לחברים" להעתקת סיכום מפורט של התשלומים</li>
+                    <li><strong>ייצוא נתונים:</strong> בלשונית "איזון", לחץ על "ייצוא נתונים" ובחר פורמט (JSON או CSV)</li>
+                </ul>
+            </div>
         </div>
     </div>
 
