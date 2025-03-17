@@ -1,0 +1,18 @@
+{
+  "groups": [
+    {
+      "name": "Test Group",
+      "admin_name": "John Doe",
+      "any_member_can_add_payments": true,
+      "members": [
+        {
+          "first_name": "John",
+          "last_name": "Doe",
+          "balance": 0
+        }
+      ],
+      "payments": []
+    }
+  ],
+  "last_updated": "2025-03-17T16:02:05.022767"
+}

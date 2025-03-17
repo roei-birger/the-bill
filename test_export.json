@@ -1,0 +1,63 @@
+{
+  "name": "Test Group",
+  "admin_name": "John Doe",
+  "any_member_can_add_payments": true,
+  "members": [
+    {
+      "first_name": "John",
+      "last_name": "Doe",
+      "balance": 75.0
+    },
+    {
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "balance": 25.0
+    },
+    {
+      "first_name": "Bob",
+      "last_name": "Johnson",
+      "balance": -100.0
+    }
+  ],
+  "payments": [
+    {
+      "id": "1742244861-Dinner",
+      "title": "Dinner",
+      "amount": 300,
+      "payer_name": "John Doe",
+      "participants": [
+        "John Doe",
+        "Jane Smith",
+        "Bob Johnson"
+      ],
+      "description": "Restaurant dinner",
+      "date": "2025-03-17T22:54:21.337084"
+    },
+    {
+      "id": "1742244861-Groceries",
+      "title": "Groceries",
+      "amount": 250,
+      "payer_name": "Jane Smith",
+      "participants": [
+        "John Doe",
+        "Jane Smith"
+      ],
+      "description": "Weekly groceries",
+      "date": "2025-03-17T22:54:21.337084"
+    }
+  ],
+  "transfers": [
+    {
+      "from": "Bob Johnson",
+      "to": "John Doe",
+      "amount": 75.0
+    },
+    {
+      "from": "Bob Johnson",
+      "to": "Jane Smith",
+      "amount": 25.0
+    }
+  ],
+  "export_date": "2025-03-17T22:54:21.338078",
+  "permissions": {}
+}

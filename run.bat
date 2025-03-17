@@ -1,0 +1,3 @@
+@echo off
+echo Starting The bill Application...
+python server.py

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The bill - ניהול הוצאות משותפות</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Assistant and Rubik -->
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>טוען...</p>
+    </div>
+
+    <!-- Error/Success Messages -->
+    <div id="error-container" class="message error"></div>
+    <div id="success-container" class="message success"></div>
+
+    <!-- Main Container -->
+    <div id="app-container">
+        <!-- Header -->
+        <header>
+            <h1>TheBill</h1>
+            <h2>ניהול הוצאות משותפות</h2>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Home Page (Groups List) -->
+            <section id="groups-screen" class="screen active">
+                <div class="screen-header">
+                    <h3>הקבוצות שלי</h3>
+                    <button id="create-group-btn" class="primary-btn">קבוצה חדשה</button>
+                </div>
+                <div id="groups-list" class="items-list">
+                    <!-- Groups will be added dynamically -->
+                </div>
+            </section>
+
+            <!-- Group Screen -->
+            <section id="group-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" data-target="groups-screen">חזרה</button>
+                    <h3 id="group-name">שם הקבוצה</h3>
+                    <div class="action-buttons">
+                        <button id="add-member-btn" class="secondary-btn">הוספת חבר</button>
+                        <button id="add-payment-btn" class="primary-btn">תשלום חדש</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="members">חברים</button>
+                    <button class="tab-btn" data-tab="payments">תשלומים</button>
+                    <button class="tab-btn" data-tab="balance">איזון</button>
+                </div>
+
+                <div id="members-tab" class="tab-content active">
+                    <div id="members-list" class="items-list">
+                        <!-- Members will be added dynamically -->
+                    </div>
+                </div>
+
+                <div id="payments-tab" class="tab-content">
+                    <div class="filter-controls">
+                        <select id="payment-filter">
+                            <option value="all">כל התשלומים</option>
+                            <option value="my-expenses">התשלומים שלי</option>
+                            <option value="involving-me">שילמו עבורי</option>
+                        </select>
+                    </div>
+                    <div id="payments-list" class="items-list">
+                        <!-- Payments will be added dynamically -->
+                    </div>
+                </div>
+
+                <div id="balance-tab" class="tab-content">
+                    <div class="section-title">
+                        <h4>סיכום העברות כספים</h4>
+                        <button id="export-data-btn" class="secondary-btn small">ייצוא נתונים</button>
+                    </div>
+                    <div id="transfers-list" class="items-list">
+                        <!-- Transfers will be added dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Member Details Screen -->
+            <section id="member-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="showScreen('group-screen')">חזרה</button>
+                    <h3 id="member-name">שם החבר</h3>
+                    <div class="action-buttons">
+                        <button id="edit-member-btn" class="secondary-btn">עריכה</button>
+                        <button id="remove-member-btn" class="danger-btn">הסרה</button>
+                    </div>
+                </div>
+
+                <div id="member-summary">
+                    <div class="balance-info">
+                        <h4>מאזן כספי</h4>
+                        <p id="member-balance" class="balance">0 ₪</p>
+                    </div>
+
+                    <div class="transfers-section">
+                        <div id="member-pays-to">
+                            <h4>לשלם ל:</h4>
+                            <ul class="transfers">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+                        <div id="member-receives-from">
+                            <h4>לקבל מ:</h4>
+                            <ul class="transfers">
+                                <!-- Will be populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="payments-section">
+                        <h4>היסטוריית תשלומים</h4>
+                        <div id="member-payments" class="items-list">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Details Screen -->
+            <section id="payment-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="showScreen('group-screen')">חזרה</button>
+                    <h3 id="payment-title">פרטי תשלום</h3>
+                    <div class="action-buttons">
+                        <button id="edit-payment-btn" class="secondary-btn">עריכה</button>
+                        <button id="delete-payment-btn" class="danger-btn">מחיקה</button>
+                    </div>
+                </div>
+
+                <div id="payment-details">
+                    <div class="payment-info">
+                        <div class="info-row">
+                            <span class="label">סכום:</span>
+                            <span id="payment-amount" class="value">0 ₪</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">שילם:</span>
+                            <span id="payment-payer" class="value"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">תאריך:</span>
+                            <span id="payment-date" class="value"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">תיאור:</span>
+                            <span id="payment-description" class="value"></span>
+                        </div>
+                    </div>
+
+                    <div class="payment-breakdown">
+                        <h4>חלוקת התשלום</h4>
+                        <div class="info-row">
+                            <span class="label">סכום מקורי:</span>
+                            <span id="original-amount" class="value">0 ₪</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">סכום מעוגל:</span>
+                            <span id="rounded-amount" class="value">0 ₪</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">סכום לאדם:</span>
+                            <span id="per-person-amount" class="value">0 ₪</span>
+                        </div>
+                    </div>
+
+                    <div class="participants-section">
+                        <h4>משתתפים</h4>
+                        <ul id="participant-list">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <div class="transfers-section">
+                        <h4>העברות לאיזון</h4>
+                        <ul id="payment-transfers" class="transfers">
+                            <!-- Will be populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>יצירת קבוצה חדשה</h3>
+            <form id="create-group-form">
+                <div class="form-group">
+                    <label for="group-name-input">שם הקבוצה</label>
+                    <input type="text" id="group-name-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-first-name">שם פרטי (מנהל)</label>
+                    <input type="text" id="admin-first-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-last-name">שם משפחה (מנהל)</label>
+                    <input type="text" id="admin-last-name" required>
+                </div>
+                <button type="submit" class="primary-btn">צור קבוצה</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="add-member-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>הוספת חבר לקבוצה</h3>
+            <form id="add-member-form">
+                <div class="form-group">
+                    <label for="first-name-input">שם פרטי</label>
+                    <input type="text" id="first-name-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="last-name-input">שם משפחה</label>
+                    <input type="text" id="last-name-input" required>
+                </div>
+                <button type="submit" class="primary-btn">הוסף חבר</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Payment Modal -->
+    <div id="add-payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>הוספת תשלום חדש</h3>
+            <form id="add-payment-form">
+                <div class="form-group">
+                    <label for="payment-title-input">כותרת תשלום</label>
+                    <input type="text" id="payment-title-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount-input">סכום</label>
+                    <input type="number" id="payment-amount-input" min="1" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-payer-select">מי שילם?</label>
+                    <select id="payment-payer-select" required>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>עבור מי?</label>
+                    <div id="payment-participants" class="checkbox-group">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="payment-desc-input">תיאור (אופציונלי)</label>
+                    <textarea id="payment-desc-input"></textarea>
+                </div>
+                <button type="submit" class="primary-btn">הוסף תשלום</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div id="edit-member-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>עריכת פרטי חבר</h3>
+            <form id="edit-member-form">
+                <input type="hidden" id="edit-member-old-name">
+                <div class="form-group">
+                    <label for="edit-first-name">שם פרטי</label>
+                    <input type="text" id="edit-first-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-last-name">שם משפחה</label>
+                    <input type="text" id="edit-last-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-member-permissions">הרשאות:</label>
+                    <select id="edit-member-permissions">
+                        <option value="true">יכול להוסיף תשלומים</option>
+                        <option value="false">לא יכול להוסיף תשלומים</option>
+                    </select>
+                </div>
+                <button type="submit" class="primary-btn">שמור שינויים</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Payment Modal -->
+    <div id="edit-payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>עריכת תשלום</h3>
+            <form id="edit-payment-form">
+                <input type="hidden" id="edit-payment-id">
+                <div class="form-group">
+                    <label for="edit-payment-title">כותרת תשלום</label>
+                    <input type="text" id="edit-payment-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-payment-amount">סכום</label>
+                    <input type="number" id="edit-payment-amount" min="1" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-payment-payer">מי שילם?</label>
+                    <select id="edit-payment-payer" required>
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>עבור מי?</label>
+                    <div id="edit-payment-participants" class="checkbox-group">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-payment-desc">תיאור (אופציונלי)</label>
+                    <textarea id="edit-payment-desc"></textarea>
+                </div>
+                <button type="submit" class="primary-btn">שמור שינויים</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script src="ui-helpers.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
