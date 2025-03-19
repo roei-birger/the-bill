@@ -1,0 +1,72 @@
+2025-03-18 11:31:49,619 - TheBill - INFO - Starting TheBill application
+2025-03-18 11:31:50,681 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:31:50] "GET /index.html HTTP/1.1" 200 23282 0.001767
+2025-03-18 11:31:50,698 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:31:50] "GET /styles.css HTTP/1.1" 200 19318 0.001085
+2025-03-18 11:31:50,701 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:31:50] "GET /eel.js HTTP/1.1" 200 6335 0.000546
+2025-03-18 11:31:50,705 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:31:50] "GET /ui-helpers.js HTTP/1.1" 200 6508 0.001149
+2025-03-18 11:31:50,708 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:31:50] "GET /app.js HTTP/1.1" 200 57850 0.001622
+2025-03-18 11:32:01,000 - TheBill - INFO - Merging members in פורים 2025: ליאור של טירם -> טירם  
+2025-03-18 11:32:01,002 - TheBill - ERROR - Member טירם   not found for merge
+2025-03-18 11:32:03,817 - TheBill - INFO - Merging members in פורים 2025: ליאור של טירם -> טירם  
+2025-03-18 11:32:03,820 - TheBill - ERROR - Member טירם   not found for merge
+2025-03-18 11:32:11,055 - TheBill - INFO - TheBill application shutting down
+2025-03-18 11:34:12,647 - TheBill - INFO - Starting TheBill application
+2025-03-18 11:34:13,751 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:34:13] "GET /index.html HTTP/1.1" 200 23282 0.002003
+2025-03-18 11:34:13,769 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:34:13] "GET /styles.css HTTP/1.1" 200 19318 0.001661
+2025-03-18 11:34:13,772 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:34:13] "GET /eel.js HTTP/1.1" 200 6335 0.000998
+2025-03-18 11:34:13,774 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:34:13] "GET /ui-helpers.js HTTP/1.1" 200 6508 0.002013
+2025-03-18 11:34:13,778 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 11:34:13] "GET /app.js HTTP/1.1" 200 57850 0.002277
+2025-03-18 11:38:57,481 - TheBill - INFO - Merging members in פורים 2025: עינב   -> אלעד  
+2025-03-18 11:38:57,484 - TheBill - ERROR - Member עינב   not found for merge
+2025-03-18 11:43:38,977 - TheBill - INFO - TheBill application shutting down
+2025-03-18 17:56:47,218 - TheBill - INFO - Starting TheBill application
+2025-03-18 17:56:49,625 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 17:56:49] "GET /index.html HTTP/1.1" 200 23282 0.000000
+2025-03-18 17:56:49,652 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 17:56:49] "GET /styles.css HTTP/1.1" 200 19318 0.000691
+2025-03-18 17:56:49,652 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 17:56:49] "GET /app.js HTTP/1.1" 200 57850 0.000000
+2025-03-18 17:56:49,659 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 17:56:49] "GET /eel.js HTTP/1.1" 200 6335 0.007124
+2025-03-18 17:56:49,663 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-18 17:56:49] "GET /ui-helpers.js HTTP/1.1" 200 6508 0.000000
+2025-03-18 18:01:08,761 - TheBill - INFO - TheBill application shutting down
+2025-03-19 08:27:33,288 - TheBill - INFO - Starting TheBill application
+2025-03-19 08:27:37,388 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:27:37] "GET /index.html HTTP/1.1" 200 23282 0.000000
+2025-03-19 08:27:46,628 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:27:46] "GET /styles.css HTTP/1.1" 200 19318 0.002012
+2025-03-19 08:27:47,722 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:27:47] "GET /eel.js HTTP/1.1" 200 6385 0.009043
+2025-03-19 08:27:47,723 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:27:47] "GET /ui-helpers.js HTTP/1.1" 200 7634 0.000000
+2025-03-19 08:27:47,728 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:27:47] "GET /app.js HTTP/1.1" 200 58537 0.001639
+2025-03-19 08:28:50,210 - TheBill - INFO - Starting TheBill application
+2025-03-19 08:28:52,053 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:28:52] "GET /index.html HTTP/1.1" 200 23282 0.000000
+2025-03-19 08:28:52,749 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:28:52] "GET /styles.css HTTP/1.1" 200 19318 0.002014
+2025-03-19 08:28:52,752 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:28:52] "GET /app.js HTTP/1.1" 200 58537 0.000999
+2025-03-19 08:28:52,756 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:28:52] "GET /eel.js HTTP/1.1" 200 6385 0.002087
+2025-03-19 08:28:52,760 - geventwebsocket.handler - INFO - 127.0.0.1 - - [2025-03-19 08:28:52] "GET /ui-helpers.js HTTP/1.1" 200 7634 0.002240
+2025-03-19 08:29:03,245 - TheBill - INFO - Merging members in פורים 2025: מאור של שפיר   -> שפיר  
+2025-03-19 08:29:03,261 - TheBill - INFO - Successfully created member group: מאור של שפיר   + שפיר  
+2025-03-19 08:29:06,542 - TheBill - INFO - Merging members in פורים 2025: מאור של שפיר   -> שפיר  
+2025-03-19 08:29:06,547 - TheBill - ERROR - Error creating member group: One or both members are already part of a group
+Traceback (most recent call last):
+  File "c:\Dev\the-bill\server.py", line 184, in merge_members
+    member_group = group.merge_members(from_member, to_member)
+  File "c:\Dev\the-bill\the_bill.py", line 354, in merge_members
+    raise ValueError("One or both members are already part of a group")
+ValueError: One or both members are already part of a group
+2025-03-19 08:29:30,268 - TheBill - INFO - TheBill application shutting down
+2025-03-19 23:15:48,850 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:10000
+ * Running on http://10.41.52.99:10000
+2025-03-19 23:15:48,860 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-03-19 23:15:48,870 - werkzeug - INFO -  * Restarting with stat
+2025-03-19 23:15:49,542 - werkzeug - WARNING -  * Debugger is active!
+2025-03-19 23:15:49,561 - werkzeug - INFO -  * Debugger PIN: 131-414-690
+2025-03-19 23:16:30,579 - werkzeug - INFO - 10.41.52.99 - - [19/Mar/2025 23:16:30] "GET / HTTP/1.1" 200 -
+2025-03-19 23:16:30,605 - werkzeug - INFO - 10.41.52.99 - - [19/Mar/2025 23:16:30] "[33mGET /styles.css HTTP/1.1[0m" 404 -
+2025-03-19 23:16:30,605 - werkzeug - INFO - 10.41.52.99 - - [19/Mar/2025 23:16:30] "[33mGET /ui-helpers.js HTTP/1.1[0m" 404 -
+2025-03-19 23:16:30,605 - werkzeug - INFO - 10.41.52.99 - - [19/Mar/2025 23:16:30] "[33mGET /app.js HTTP/1.1[0m" 404 -
+2025-03-19 23:16:31,785 - werkzeug - INFO - 10.41.52.99 - - [19/Mar/2025 23:16:31] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-03-19 23:16:44,576 - werkzeug - INFO - 127.0.0.1 - - [19/Mar/2025 23:16:44] "GET / HTTP/1.1" 200 -
+2025-03-19 23:16:44,756 - werkzeug - INFO - 127.0.0.1 - - [19/Mar/2025 23:16:44] "[33mGET /styles.css HTTP/1.1[0m" 404 -
+2025-03-19 23:16:44,797 - werkzeug - INFO - 127.0.0.1 - - [19/Mar/2025 23:16:44] "[33mGET /ui-helpers.js HTTP/1.1[0m" 404 -
+2025-03-19 23:16:44,841 - werkzeug - INFO - 127.0.0.1 - - [19/Mar/2025 23:16:44] "[33mGET /app.js HTTP/1.1[0m" 404 -
+2025-03-19 23:16:46,131 - werkzeug - INFO - 127.0.0.1 - - [19/Mar/2025 23:16:46] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-03-19 23:18:22,095 - werkzeug - INFO -  * Detected change in 'C:\\Dev\\the-bill\\app.py', reloading
+2025-03-19 23:18:22,143 - werkzeug - INFO -  * Restarting with stat
+2025-03-19 23:18:22,673 - werkzeug - WARNING -  * Debugger is active!
+2025-03-19 23:18:22,681 - werkzeug - INFO -  * Debugger PIN: 131-414-690

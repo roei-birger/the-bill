@@ -8,13 +8,25 @@ const TheBill = {
     payments: []
 };
 
-// API Interface to communicate with Python backend
+// API Interface to communicate with Flask backend
 const API = {
     // Groups
     createGroup: async (name, adminFirstName, adminLastName) => {
         try {
             console.log("Creating group:", name, adminFirstName, adminLastName);
-            const result = await eel.create_group(name, adminFirstName, adminLastName)();
+            const response = await fetch('/api/create_group', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name,
+                    admin_first_name: adminFirstName,
+                    admin_last_name: adminLastName
+                }),
+            });
+            
+            const result = await response.json();
             console.log("Create group response:", result);
             if (!result.success) throw new Error(result.error || "שגיאה לא ידועה ביצירת קבוצה");
             return result.group;
@@ -27,7 +39,9 @@ const API = {
     loadGroups: async () => {
         try {
             console.log("Loading all groups...");
-            const result = await eel.get_all_groups()();
+            const response = await fetch('/api/get_all_groups');
+            const result = await response.json();
+            
             console.log("Load groups response:", result);
             if (!result.success) throw new Error(result.error || "שגיאה בטעינת קבוצות");
             TheBill.groups = result.groups || [];
@@ -40,7 +54,8 @@ const API = {
     },
     
     loadGroup: async (groupName) => {
-        const result = await eel.get_group(groupName)();
+        const response = await fetch(`/api/get_group/${encodeURIComponent(groupName)}`);
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         TheBill.currentGroup = result.group;
         TheBill.members = result.group.members;
@@ -49,66 +64,280 @@ const API = {
     },
     
     deleteGroup: async (groupName) => {
-        const result = await eel.delete_group(groupName)();
+        const response = await fetch('/api/delete_group', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.success;
     },
     
+    editGroupName: async (oldName, newName) => {
+        try {
+            console.log("Editing group name:", {oldName, newName});
+            const response = await fetch('/api/edit_group_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    old_name: oldName,
+                    new_name: newName
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Edit group name response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה בעדכון שם הקבוצה");
+            
+            // Update TheBill.currentGroup
+            if (TheBill.currentGroup && TheBill.currentGroup.name === oldName) {
+                TheBill.currentGroup.name = newName;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error("Error in editGroupName:", error);
+            throw error;
+        }
+    },
+    
     // Members
     addMember: async (groupName, firstName, lastName) => {
-        const result = await eel.add_member_to_group(groupName, firstName, lastName)();
+        const response = await fetch('/api/add_member_to_group', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                first_name: firstName,
+                last_name: lastName
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.member;
     },
     
     editMember: async (groupName, oldFullName, newFirstName, newLastName) => {
-        const result = await eel.edit_member(groupName, oldFullName, newFirstName, newLastName)();
+        const response = await fetch('/api/edit_member', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                old_full_name: oldFullName,
+                new_first_name: newFirstName,
+                new_last_name: newLastName
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.member;
     },
     
     removeMember: async (groupName, fullName) => {
-        const result = await eel.remove_member(groupName, fullName)();
+        const response = await fetch('/api/remove_member', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                full_name: fullName
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.success;
     },
     
+    mergeMembers: async (groupName, fromMember, toMember, combinedName = null) => {
+        try {
+            console.log("Merging members:", {groupName, fromMember, toMember, combinedName});
+            const response = await fetch('/api/merge_members', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    from_member: fromMember,
+                    to_member: toMember,
+                    combined_name: combinedName
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Merge members response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה באיחוד החברים");
+            return true;
+        } catch (error) {
+            console.error("Error in mergeMembers:", error);
+            throw error;
+        }
+    },
+    
     // Payments
     addPayment: async (groupName, title, amount, payerName, participants, description) => {
-        const result = await eel.add_payment_to_group(groupName, title, amount, payerName, participants, description)();
+        const response = await fetch('/api/add_payment_to_group', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                title,
+                amount,
+                payer_name: payerName,
+                participants,
+                description
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.payment;
     },
     
     editPayment: async (groupName, paymentId, title, amount, payerName, participants, description) => {
-        const result = await eel.edit_payment(groupName, paymentId, title, amount, payerName, participants, description)();
-        if (!result.success) throw new Error(result.error);
-        return result.payment;
+        try {
+            console.log("Editing payment:", {groupName, paymentId, title, amount, payerName, participants, description});
+            const response = await fetch('/api/edit_payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    payment_id: paymentId,
+                    title,
+                    amount,
+                    payer_name: payerName,
+                    participants,
+                    description
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Edit payment response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה בעדכון התשלום");
+            return result.payment;
+        } catch (error) {
+            console.error("Error in editPayment:", error);
+            throw error;
+        }
     },
     
     deletePayment: async (groupName, paymentId) => {
-        const result = await eel.delete_payment(groupName, paymentId)();
+        const response = await fetch('/api/delete_payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                payment_id: paymentId
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.success;
     },
     
+    getPaymentBreakdown: async (groupName, paymentId) => {
+        try {
+            const response = await fetch('/api/get_payment_breakdown', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    payment_id: paymentId
+                }),
+            });
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || "שגיאה בטעינת פרטי תשלום");
+            return result.breakdown;
+        } catch (error) {
+            console.error("Error getting payment breakdown:", error);
+            throw error;
+        }
+    },
+    
     // Transfers and Balances
     getTransfers: async (groupName) => {
-        const result = await eel.get_group_transfers(groupName)();
+        const response = await fetch(`/api/get_group_transfers/${encodeURIComponent(groupName)}`);
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.transfers;
     },
     
     getMemberSummary: async (groupName, memberFullName) => {
-        const result = await eel.get_member_summary(groupName, memberFullName)();
+        const response = await fetch('/api/get_member_summary', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                member_full_name: memberFullName
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.summary;
     },
     
     exportGroupData: async (groupName, format) => {
-        const result = await eel.export_group_data(groupName, format)();
+        const response = await fetch('/api/export_group_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_name: groupName,
+                format
+            }),
+        });
+        const result = await response.json();
         if (!result.success) throw new Error(result.error);
         return result.filepath;
+    },
+    
+    // Permissions
+    setPermissions: async (groupName, memberFullName, canAddPayments) => {
+        try {
+            console.log("Setting permissions:", {groupName, memberFullName, canAddPayments});
+            const response = await fetch('/api/set_permissions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    member_full_name: memberFullName,
+                    can_add_payments: canAddPayments
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Set permissions response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה בהגדרת הרשאות");
+            return true;
+        } catch (error) {
+            console.error("Error in setPermissions:", error);
+            throw error;
+        }
     }
 };
 
@@ -1086,7 +1315,7 @@ function initializeEventListeners() {
 
 // Generate detailed text summaries for all members
 async function generateMembersSummary() {
-    if (!TheBill.currentGroup || !TheBill.members || TheBill.members.length === 0) {
+    if (!TheBill.currentGroup || !TheBill.members || !TheBill.members.length === 0) {
         throw new Error("אין נתונים להצגה");
     }
     
@@ -1369,79 +1598,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
-
-// Add missing API function
-API.getPaymentBreakdown = async (groupName, paymentId) => {
-    try {
-        const result = await eel.get_payment_breakdown(groupName, paymentId)();
-        if (!result.success) throw new Error(result.error || "שגיאה בטעינת פרטי תשלום");
-        return result.breakdown;
-    } catch (error) {
-        console.error("Error getting payment breakdown:", error);
-        throw error;
-    }
-};
-
-// Fix API.editPayment to match the Python function signature
-API.editPayment = async (groupName, paymentId, title, amount, payerName, participants, description) => {
-    try {
-        console.log("Editing payment:", {groupName, paymentId, title, amount, payerName, participants, description});
-        const result = await eel.edit_payment(
-            groupName, paymentId, title, amount, payerName, participants, description
-        )();
-        console.log("Edit payment response:", result);
-        if (!result.success) throw new Error(result.error || "שגיאה בעדכון התשלום");
-        return result.payment;
-    } catch (error) {
-        console.error("Error in editPayment:", error);
-        throw error;
-    }
-};
-
-// Add permissions API
-API.setPermissions = async (groupName, memberFullName, canAddPayments) => {
-    try {
-        console.log("Setting permissions:", {groupName, memberFullName, canAddPayments});
-        const result = await eel.set_permissions(groupName, memberFullName, canAddPayments)();
-        console.log("Set permissions response:", result);
-        if (!result.success) throw new Error(result.error || "שגיאה בהגדרת הרשאות");
-        return true;
-    } catch (error) {
-        console.error("Error in setPermissions:", error);
-        throw error;
-    }
-};
-
-// Update API.mergeMembers to handle the combined name
-API.mergeMembers = async (groupName, fromMember, toMember, combinedName = null) => {
-    try {
-        console.log("Merging members:", {groupName, fromMember, toMember, combinedName});
-        const result = await eel.merge_members(groupName, fromMember, toMember, combinedName)();
-        console.log("Merge members response:", result);
-        if (!result.success) throw new Error(result.error || "שגיאה באיחוד החברים");
-        return true;
-    } catch (error) {
-        console.error("Error in mergeMembers:", error);
-        throw error;
-    }
-};
-
-// Update API functions section
-API.editGroupName = async (oldName, newName) => {
-    try {
-        console.log("Editing group name:", {oldName, newName});
-        const result = await eel.edit_group_name(oldName, newName)();
-        console.log("Edit group name response:", result);
-        if (!result.success) throw new Error(result.error || "שגיאה בעדכון שם הקבוצה");
-        
-        // Update TheBill.currentGroup
-        if (TheBill.currentGroup && TheBill.currentGroup.name === oldName) {
-            TheBill.currentGroup.name = newName;
-        }
-        
-        return true;
-    } catch (error) {
-        console.error("Error in editGroupName:", error);
-        throw error;
-    }
-};
