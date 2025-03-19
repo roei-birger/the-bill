@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for
 import os
 import logging
 from the_bill import (
@@ -19,8 +19,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger('TheBill')
 
-# Configure Flask app
-app = Flask(__name__, static_folder="web", template_folder="web")
+# Configure Flask appעבור קבצים סטטיים
+app = Flask(__name__, static_folder="web", template_folder="web")mplate_folder="web")
 
 @app.route('/')
 def home():
@@ -358,6 +358,12 @@ def member_from_data(data):
         setattr(member, 'merged_data', data['merged_data'])
     
     return member
+
+if __name__ == '__main__':
+    print(f"Flask application running. Access it at: http://localhost:10000")
+    app.run(host='0.0.0.0', port=10000, debug=True)    """דף בדיקת סטטוס לאיתור בעיות"""
+
+    return render_template('status.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)

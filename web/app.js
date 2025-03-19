@@ -1565,10 +1565,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn("Loading screen element not found!");
         }
         
-        // Check if eel.js is loaded
+        // הסרת הבדיקה של Eel שכבר אינה רלוונטית
+        // במקום:
+        /*
         if (typeof eel === 'undefined') {
             throw new Error("eel.js is not loaded. Make sure the backend is running.");
         }
+        */
         
         console.log("Loading groups from backend...");
         // Load groups

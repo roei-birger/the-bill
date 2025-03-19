@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת סטטוס - TheBill</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            direction: rtl;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>דף בדיקת סטטוס - TheBill</h1>
+    
+    <h2>בדיקת קבצים סטטיים</h2>
+    <div id="static-files-check"></div>
+    
+    <h2>בדיקת API</h2>
+    <div id="api-check"></div>
+    
+    <script>
+        // בדיקת קבצים סטטיים
+        async function checkStaticFiles() {
+            const files = ['styles.css', 'app.js', 'ui-helpers.js'];
+            const results = document.getElementById('static-files-check');
+            
+            for (const file of files) {
+                try {
+                    const response = await fetch(file);
+                    const status = response.ok ? 
+                        `<span class="success">נטען בהצלחה (${response.status})</span>` : 
+                        `<span class="error">שגיאה בטעינה (${response.status})</span>`;
+                    results.innerHTML += `<div>קובץ ${file}: ${status}</div>`;
+                } catch (err) {
+                    results.innerHTML += `<div>קובץ ${file}: <span class="error">שגיאה: ${err.message}</span></div>`;
+                }
+            }
+        }
+        
+        // בדיקת ה-API
+        async function checkAPI() {
+            const results = document.getElementById('api-check');
+            
+            try {
+                const response = await fetch('/api/get_all_groups');
+                const data = await response.json();
+                results.innerHTML += `<div>קריאת API לקבלת קבוצות: <span class="success">הצליחה</span></div>`;
+                results.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (err) {
+                results.innerHTML += `<div>קריאת API לקבלת קבוצות: <span class="error">נכשלה: ${err.message}</span></div>`;
+            }
+        }
+        
+        // הפעלת הבדיקות
+        document.addEventListener('DOMContentLoaded', () => {
+            checkStaticFiles();
+            checkAPI();
+        });
+    </script>
+</body>
+</html>
