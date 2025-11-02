@@ -43,7 +43,8 @@
         }
         
         /* Animated Header */
-        header {
+        header,
+        header.header {
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(20px) !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
@@ -51,6 +52,11 @@
             top: 0;
             z-index: 100;
             border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            min-height: 120px;
+        }
+        
+        header .header {
+            position: relative;
         }
         
         header h1 {
@@ -62,6 +68,8 @@
             font-weight: 800 !important;
             animation: gradientShift 3s ease infinite;
             text-shadow: none !important;
+            position: relative;
+            z-index: 10;
         }
         
         @keyframes gradientShift {
@@ -73,6 +81,8 @@
             color: #667eea !important;
             font-weight: 500 !important;
             opacity: 0.8;
+            position: relative;
+            z-index: 10;
         }
         
         /* Glass Morphism Main Container */
@@ -457,6 +467,172 @@
                 font-size: 0.9rem !important;
             }
         }
+        
+        /* 🏠 Household Unit Styles */
+        .household-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 20px !important;
+            padding: 20px !important;
+            margin: 20px 0 !important;
+            position: relative !important;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4) !important;
+            animation: householdGlow 3s ease-in-out infinite !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        @keyframes householdGlow {
+            0%, 100% { 
+                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+            }
+            50% { 
+                box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6), 
+                           0 0 60px rgba(102, 126, 234, 0.3);
+            }
+        }
+        
+        .household-header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            color: white !important;
+            margin-bottom: 15px !important;
+            padding-bottom: 10px !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        .household-title {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+        }
+        
+        .household-icon {
+            font-size: 28px !important;
+            animation: heartBeat 2s ease-in-out infinite !important;
+        }
+        
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(1.1); }
+            20%, 40% { transform: scale(0.9); }
+        }
+        
+        .household-members-grid {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+        }
+        
+        .household-member-card {
+            background: rgba(255, 255, 255, 0.25) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 2px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 15px !important;
+            padding: 12px 18px !important;
+            color: white !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: all 0.3s ease !important;
+            cursor: default !important;
+        }
+        
+        .household-member-card:hover {
+            transform: translateY(-2px) !important;
+            background: rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .household-balance {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #667eea !important;
+            padding: 8px 16px !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+        }
+        
+        .household-delete-btn {
+            background: rgba(255, 82, 82, 0.9) !important;
+            color: white !important;
+            border: none !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+            font-size: 14px !important;
+        }
+        
+        .household-delete-btn:hover {
+            background: rgba(255, 82, 82, 1) !important;
+            transform: scale(1.1) rotate(90deg) !important;
+            box-shadow: 0 4px 15px rgba(255, 82, 82, 0.5) !important;
+        }
+        
+        /* Drag & Drop States */
+        .member-item {
+            cursor: grab !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .member-item.dragging {
+            opacity: 0.5 !important;
+            cursor: grabbing !important;
+            transform: scale(0.95) !important;
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.4) !important;
+        }
+        
+        .member-item.drag-over {
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.6), 
+                       0 20px 50px rgba(102, 126, 234, 0.4) !important;
+            background: rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        .member-item.drag-over::before {
+            content: "שחרר כדי לחבר לתא משפחתי" !important;
+            position: absolute !important;
+            top: -30px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #667eea !important;
+            color: white !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            font-size: 0.85rem !important;
+            white-space: nowrap !important;
+            z-index: 1000 !important;
+            animation: bounceIn 0.3s ease !important;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: translateX(-50%) scale(0); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        
+        /* Household Creation Hint */
+        .household-hint {
+            text-align: center !important;
+            color: #667eea !important;
+            font-size: 0.9rem !important;
+            margin-top: 15px !important;
+            padding: 12px !important;
+            background: rgba(102, 126, 234, 0.1) !important;
+            border-radius: 10px !important;
+            border: 2px dashed rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        .household-hint i {
+            margin-left: 8px !important;
+        }
     </style>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -482,7 +658,7 @@
     <!-- Main Container -->
     <div id="app-container">
         <!-- Header -->
-        <header>
+        <header class="header">
             <h1>The bill</h1>
             <h2>ניהול הוצאות משותפות</h2>
         </header>
@@ -888,8 +1064,16 @@
                 <ul>
                     <li><strong>הוספת חבר:</strong> עבור ללשונית "חברים", לחץ על "הוסף חבר", הזן את הפרטים ולחץ "הוסף חבר"</li>
                     <li><strong>עריכת חבר:</strong> לחץ על החבר שברצונך לערוך, לחץ "עריכה", שנה את הפרטים ולחץ "שמור שינויים"</li>
-                    <li><strong>הסרת חבר:</strong> לחץ על החבר שברצונך להסיר, לחץ "הסרה" (אפשרי כשהיתרה 0)</li>
-                    <li><strong>איחוד חברים:</strong> גרור חבר אחד אל חבר אחר כדי לאחד אותם ליחידה כלכלית אחת</li>
+                    <li><strong>הסרת חבר:</strong> לחץ על החבר שברצונך להסיר, לחץ "הסרה" - החבר יוסר יחד עם כל התשלומים שביצע</li>
+                </ul>
+                
+                <h4>🏠 תאים משפחתיים / כלכליים</h4>
+                <ul>
+                    <li><strong>יצירת תא משפחתי:</strong> גרור חבר אחד ושחרר אותו על חבר אחר - ייפתח חלון ליצירת תא משפחתי</li>
+                    <li><strong>שם אופציונלי:</strong> ניתן לתת שם לתא (למשל "משפחת כהן") או להשאיר את השם האוטומטי</li>
+                    <li><strong>איך זה עובד:</strong> בהוספת תשלומים - עדיין תבחר כל אחד בנפרד. באיזון - החובות שלהם יאוחדו לתא אחד</li>
+                    <li><strong>מחיקת תא:</strong> לחץ על כפתור ה-X האדום בפינת התא המשפחתי - החברים יחזרו להיות עצמאיים</li>
+                    <li><strong>סיכום תאים:</strong> בייצוא הסיכום הכללי, תאים משפחתיים מוצגים כיחידה אחת עם מאזן משותף</li>
                 </ul>
                 
                 <h4>ניהול תשלומים</h4>
@@ -901,10 +1085,62 @@
                 
                 <h4>איזון וייצוא</h4>
                 <ul>
-                    <li><strong>צפייה בהעברות:</strong> עבור ללשונית "איזון" לצפייה בהעברות הכספים המומלצות</li>
-                    <li><strong>ייצוא סיכום:</strong> בלשונית "איזון", לחץ על "ייצוא סיכום לחברים" להעתקת סיכום מפורט של התשלומים</li>
-                    <li><strong>ייצוא נתונים:</strong> בלשונית "איזון", לחץ על "ייצוא נתונים" ובחר פורמט (JSON או CSV)</li>
+                    <li><strong>צפייה בהעברות:</strong> עבור ללשונית "איזון" לצפייה בהעברות הכספים המומלצות (תאים משפחתיים מסומנים ב-🏠)</li>
+                    <li><strong>ייצוא סיכום כללי:</strong> בלשונית "איזון", לחץ על "ייצוא סיכום לחברים" להעתקת סיכום מפורט - תאים משפחתיים מוצגים כיחידה אחת</li>
+                    <li><strong>ייצוא נתונים:</strong> בלשונית "איזון", לחץ על "ייצוא נתונים" ובחר פורמט (JSON או CSV) לגיבוי או ניתוח חיצוני</li>
                 </ul>
+                
+                <h4>🎨 עיצוב ואפקטים</h4>
+                <ul>
+                    <li><strong>גשם אייקונים:</strong> בחלק העליון של המסך תוכל לראות אנימציה עדינה של אייקונים נופלים (💵💰🍕 וכו')</li>
+                    <li><strong>אייקונים שקופים:</strong> האנימציה כמעט שקופה כדי לא להפריע לחוויית השימוש</li>
+                    <li><strong>תאים משפחתיים:</strong> מוצגים עם הילה סגולה וזוהרת ואייקון 🏠</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Household Creation Modal -->
+    <div id="create-household-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>🏠 יצירת תא משפחתי</h3>
+            <p style="text-align: center; color: #667eea; margin-bottom: 20px;">
+                <i class="fas fa-info-circle"></i>
+                תא משפחתי מאחד את החובות והזכויות של חבריו בחישוב האיזון
+            </p>
+            
+            <div class="merge-members-list">
+                <div class="member-merge-item">
+                    <div class="member-avatar" id="household-member1-avatar"></div>
+                    <div id="household-member1-name"></div>
+                </div>
+                <div class="merge-arrow">♥</div>
+                <div class="member-merge-item">
+                    <div class="member-avatar" id="household-member2-avatar"></div>
+                    <div id="household-member2-name"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="household-name-input">שם התא (אופציונלי):</label>
+                <input type="text" id="household-name-input" placeholder='לדוגמה: "משפחת כהן" או השאר ריק לשם אוטומטי'>
+            </div>
+            
+            <div style="background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                <strong style="color: #667eea;">💡 מה זה אומר?</strong>
+                <ul style="margin-top: 10px; padding-right: 20px; color: #666;">
+                    <li>בהוספת תשלומים - עדיין תבחר כל אחד בנפרד</li>
+                    <li>בחישוב איזון - החובות שלהם יאוחדו לתא אחד</li>
+                    <li>התא יחשב כיחידה כלכלית אחת</li>
+                </ul>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="confirm-household-btn" class="primary-btn">
+                    <i class="fas fa-check"></i> צור תא משפחתי
+                </button>
+                <button class="secondary-btn close-modal-btn">ביטול</button>
             </div>
         </div>
     </div>
@@ -913,223 +1149,136 @@
     <script src="/static/ui-helpers.js"></script>
     <script src="/static/app.js"></script>
     <script>
-        // 🎨 Ultra Modern Interactive Effects
-        
-        // Particle Background Effect
-        function createParticles() {
-            const particles = document.createElement('div');
-            particles.style.cssText = `
-                position: fixed;
+        // 🎨 Icon Rain Animation in Header
+        function createIconRain() {
+            const header = document.querySelector('.header');
+            if (!header) {
+                console.log('Header not found, retrying...');
+                setTimeout(createIconRain, 500);
+                return;
+            }
+            
+            console.log('Creating icon rain...');
+            
+            // Create container for falling icons
+            const rainContainer = document.createElement('div');
+            rainContainer.style.cssText = `
+                position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
                 pointer-events: none;
-                z-index: 0;
+                overflow: hidden;
+                z-index: 5;
             `;
+            header.style.position = 'relative';
+            header.appendChild(rainContainer);
             
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
+            // Icons related to bills, parties, food, drinks, money
+            const icons = ['💵', '💰', '💳', '🍕', '🍔', '🍺', '🍷', '🥂', '🎉', '🎊', '🎈', '🍾', '🥗', '🍝', '🍣', '🍰', '☕', '🍻', '💸', '🪙'];
+            
+            function createFallingIcon() {
+                const icon = document.createElement('div');
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                const startPosition = Math.random() * 100;
+                const duration = Math.random() * 4 + 6; // 6-10 seconds (slower)
+                const size = Math.random() * 10 + 20; // 20-30px (smaller)
+                const delay = Math.random() * 5;
+                const rotate = Math.random() * 360;
+                const animationName = `iconFall${Math.random().toString(36).substr(2, 9)}`;
+                
+                icon.textContent = randomIcon;
+                icon.style.cssText = `
                     position: absolute;
-                    width: ${Math.random() * 4 + 2}px;
-                    height: ${Math.random() * 4 + 2}px;
-                    background: rgba(255, 255, 255, 0.6);
-                    border-radius: 50%;
-                    top: ${Math.random() * 100}%;
-                    left: ${Math.random() * 100}%;
-                    animation: particleFloat ${Math.random() * 10 + 10}s linear infinite;
-                    animation-delay: ${Math.random() * 5}s;
+                    left: ${startPosition}%;
+                    top: -60px;
+                    font-size: ${size}px;
+                    opacity: 0.25;
+                    animation: ${animationName} ${duration}s linear ${delay}s infinite;
+                    pointer-events: none;
+                    z-index: 5;
                 `;
-                particles.appendChild(particle);
+                
+                // Create unique animation for each icon
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes ${animationName} {
+                        0% {
+                            transform: translateY(0) rotate(0deg);
+                            opacity: 0;
+                        }
+                        10% {
+                            opacity: 0.25;
+                        }
+                        90% {
+                            opacity: 0.25;
+                        }
+                        100% {
+                            transform: translateY(250px) rotate(${rotate}deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                rainContainer.appendChild(icon);
             }
             
-            document.body.appendChild(particles);
+            // Create initial icons
+            for (let i = 0; i < 25; i++) {
+                createFallingIcon();
+            }
+            
+            console.log('Icon rain created with 25 icons');
         }
         
-        // Add particle animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes particleFloat {
-                0% {
-                    transform: translateY(100vh) translateX(0) scale(0);
-                    opacity: 0;
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
-                10% {
-                    opacity: 1;
-                }
-                90% {
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateY(-100vh) translateX(${Math.random() * 200 - 100}px) scale(1);
-                    opacity: 0;
-                }
-            }
-            
-            @keyframes ripple {
-                0% {
-                    transform: scale(0);
-                    opacity: 1;
-                }
-                100% {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
+            });
+        });
         
-        // Create ripple effect on button clicks
+        // Add ripple effect to buttons
         document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('primary-btn') || 
-                e.target.classList.contains('secondary-btn')) {
-                const ripple = document.createElement('span');
-                const rect = e.target.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                const button = e.target.tagName === 'BUTTON' ? e.target : e.target.closest('button');
+                const ripple = document.createElement('div');
                 
                 ripple.style.cssText = `
                     position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    border-radius: 50%;
+                    width: 100px;
+                    height: 100px;
                     background: rgba(255, 255, 255, 0.6);
-                    left: ${x}px;
-                    top: ${y}px;
-                    animation: ripple 0.6s ease-out;
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: rippleEffect 0.6s ease-out;
                     pointer-events: none;
+                    left: ${e.offsetX - 50}px;
+                    top: ${e.offsetY - 50}px;
                 `;
                 
-                e.target.style.position = 'relative';
-                e.target.style.overflow = 'hidden';
-                e.target.appendChild(ripple);
+                button.style.position = 'relative';
+                button.style.overflow = 'hidden';
+                button.appendChild(ripple);
                 
                 setTimeout(() => ripple.remove(), 600);
             }
         });
         
-        // Mouse trail effect
-        let mouseTrail = [];
-        document.addEventListener('mousemove', function(e) {
-            const trail = document.createElement('div');
-            trail.style.cssText = `
-                position: fixed;
-                width: 8px;
-                height: 8px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 99999;
-                left: ${e.clientX - 4}px;
-                top: ${e.clientY - 4}px;
-                opacity: 0.6;
-                animation: trailFade 0.5s ease-out forwards;
-            `;
-            
-            document.body.appendChild(trail);
-            mouseTrail.push(trail);
-            
-            if (mouseTrail.length > 10) {
-                const old = mouseTrail.shift();
-                old.remove();
-            }
-            
-            setTimeout(() => trail.remove(), 500);
-        });
-        
-        const trailStyle = document.createElement('style');
-        trailStyle.textContent = `
-            @keyframes trailFade {
-                to {
-                    transform: scale(0);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(trailStyle);
-        
-        // Add tilt effect to cards
-        document.addEventListener('mousemove', function(e) {
-            const cards = document.querySelectorAll('.group-item, .member-item, .payment-item');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const rotateX = (y - centerY) / 10;
-                    const rotateY = (centerX - x) / 10;
-                    
-                    card.style.transform = `
-                        perspective(1000px) 
-                        rotateX(${rotateX}deg) 
-                        rotateY(${rotateY}deg) 
-                        translateY(-10px) 
-                        translateX(10px) 
-                        scale(1.02)
-                    `;
-                }
-            });
-        });
-        
-        document.addEventListener('mouseleave', function(e) {
-            if (e.target.classList.contains('group-item') ||
-                e.target.classList.contains('member-item') ||
-                e.target.classList.contains('payment-item')) {
-                e.target.style.transform = '';
-            }
-        });
-        
-        // Initialize particles on load
+        // Initialize icon rain on load
         window.addEventListener('DOMContentLoaded', function() {
-            createParticles();
+            createIconRain();
             console.log('🎨 Ultra Modern Design loaded!');
         });
-        
-        // Confetti effect for success
-        function createConfetti() {
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                const colors = ['#667eea', '#764ba2', '#00c9a7', '#ff5252', '#ffc107'];
-                confetti.style.cssText = `
-                    position: fixed;
-                    width: ${Math.random() * 10 + 5}px;
-                    height: ${Math.random() * 10 + 5}px;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    left: ${Math.random() * 100}vw;
-                    top: -20px;
-                    opacity: ${Math.random() * 0.5 + 0.5};
-                    transform: rotate(${Math.random() * 360}deg);
-                    pointer-events: none;
-                    z-index: 99999;
-                    animation: confettiFall ${Math.random() * 3 + 2}s ease-out forwards;
-                `;
-                document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 5000);
-            }
-        }
-        
-        const confettiStyle = document.createElement('style');
-        confettiStyle.textContent = `
-            @keyframes confettiFall {
-                to {
-                    transform: translateY(100vh) rotate(${Math.random() * 720}deg);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(confettiStyle);
-        
-        // Override showSuccess to add confetti
-        const originalShowSuccess = window.showSuccess;
-        window.showSuccess = function(message) {
-            if (originalShowSuccess) originalShowSuccess(message);
-            createConfetti();
-        };
     </script>
 </body>
 </html>

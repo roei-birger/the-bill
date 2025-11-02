@@ -359,6 +359,66 @@ def member_from_data(data):
     
     return member
 
+# Household Management Endpoints
+@app.route('/api/create_household', methods=['POST'])
+def api_create_household():
+    """Create a household unit in a group"""
+    data = request.json
+    from the_bill import TheBillApp
+    app_instance = TheBillApp()
+    
+    group = app_instance._get_group_by_name(data.get('group_name'))
+    if not group:
+        return jsonify({'success': False, 'error': f"Group {data.get('group_name')} not found"})
+    
+    try:
+        household = group.create_household(
+            data.get('member_full_names', []),
+            data.get('name', '')
+        )
+        app_instance.save_data()
+        logger.info(f"Created household: {household.name} in group {group.name}")
+        return jsonify({'success': True, 'household': household.to_dict()})
+    except ValueError as e:
+        logger.error(f"Error creating household: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/delete_household', methods=['POST'])
+def api_delete_household():
+    """Delete a household unit"""
+    data = request.json
+    from the_bill import TheBillApp
+    app_instance = TheBillApp()
+    
+    group = app_instance._get_group_by_name(data.get('group_name'))
+    if not group:
+        return jsonify({'success': False, 'error': f"Group {data.get('group_name')} not found"})
+    
+    try:
+        success = group.delete_household(data.get('household_id'))
+        app_instance.save_data()
+        logger.info(f"Deleted household {data.get('household_id')} from group {group.name}")
+        return jsonify({'success': True})
+    except ValueError as e:
+        logger.error(f"Error deleting household: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/get_households/<group_name>', methods=['GET'])
+def api_get_households(group_name):
+    """Get all active households in a group"""
+    from the_bill import TheBillApp
+    app_instance = TheBillApp()
+    
+    group = app_instance._get_group_by_name(group_name)
+    if not group:
+        return jsonify({'success': False, 'error': f"Group {group_name} not found"})
+    
+    households = group.get_active_households()
+    return jsonify({
+        'success': True,
+        'households': [h.to_dict() for h in households]
+    })
+
 if __name__ == '__main__':
     print(f"Flask application running. Access it at: http://localhost:10000")
     app.run(host='0.0.0.0', port=10000, debug=True) # Run the Flask app

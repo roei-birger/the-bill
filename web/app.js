@@ -338,6 +338,71 @@ const API = {
             console.error("Error in setPermissions:", error);
             throw error;
         }
+    },
+    
+    // Households
+    createHousehold: async (groupName, memberFullNames, name = '') => {
+        try {
+            console.log("Creating household:", {groupName, memberFullNames, name});
+            const response = await fetch('/api/create_household', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    member_full_names: memberFullNames,
+                    name: name
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Create household response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה ביצירת תא משפחתי");
+            return result.household;
+        } catch (error) {
+            console.error("Error in createHousehold:", error);
+            throw error;
+        }
+    },
+    
+    deleteHousehold: async (groupName, householdId) => {
+        try {
+            console.log("Deleting household:", {groupName, householdId});
+            const response = await fetch('/api/delete_household', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    group_name: groupName,
+                    household_id: householdId
+                }),
+            });
+            
+            const result = await response.json();
+            console.log("Delete household response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה במחיקת תא משפחתי");
+            return true;
+        } catch (error) {
+            console.error("Error in deleteHousehold:", error);
+            throw error;
+        }
+    },
+    
+    getHouseholds: async (groupName) => {
+        try {
+            console.log("Getting households for group:", groupName);
+            const response = await fetch(`/api/get_households/${encodeURIComponent(groupName)}`);
+            const result = await response.json();
+            
+            console.log("Get households response:", result);
+            if (!result.success) throw new Error(result.error || "שגיאה בטעינת תאים משפחתיים");
+            return result.households || [];
+        } catch (error) {
+            console.error("Error in getHouseholds:", error);
+            return [];
+        }
     }
 };
 
@@ -536,7 +601,7 @@ function updateTabCounts() {
 }
 
 // Update the renderMembers function to add drag-and-drop functionality
-function renderMembers() {
+async function renderMembers() {
     const membersList = document.getElementById('members-list');
     if (!membersList || !TheBill.members) return;
     
@@ -547,8 +612,79 @@ function renderMembers() {
         return;
     }
     
+    // Get active households
+    let households = [];
+    try {
+        households = await API.getHouseholds(TheBill.currentGroup.name);
+    } catch (error) {
+        console.error("Error loading households:", error);
+    }
+    
+    // Track which members are in households
+    const householdMembers = new Set();
+    households.forEach(household => {
+        household.member_full_names.forEach(name => householdMembers.add(name));
+    });
+    
+    // Render households first
+    households.forEach(household => {
+        const householdDiv = document.createElement('div');
+        householdDiv.className = 'household-container';
+        
+        // Calculate total balance for household
+        let totalBalance = 0;
+        household.member_full_names.forEach(memberName => {
+            const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+            if (member) {
+                totalBalance += member.balance || 0;
+            }
+        });
+        
+        const balanceClass = totalBalance > 0 ? 'positive-balance' : 
+                            totalBalance < 0 ? 'negative-balance' : '';
+        
+        householdDiv.innerHTML = `
+            <div class="household-header">
+                <div class="household-title">
+                    <span class="household-icon">🏠</span>
+                    <span>${household.name}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="household-balance ${balanceClass}">${formatCurrency(totalBalance)}</div>
+                    <button class="household-delete-btn" onclick="deleteHousehold('${household.id}')" title="פרק תא משפחתי">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="household-members-grid">
+                ${household.member_full_names.map(memberName => {
+                    const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+                    const memberBalance = member ? member.balance : 0;
+                    const memberBalanceClass = memberBalance > 0 ? 'positive-balance' : 
+                                              memberBalance < 0 ? 'negative-balance' : '';
+                    return `
+                        <div class="household-member-card">
+                            <span>${getInitials(memberName)}</span>
+                            <span>${memberName}</span>
+                            <small style="opacity: 0.8;">(${formatCurrency(memberBalance)})</small>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+        
+        membersList.appendChild(householdDiv);
+    });
+    
+    // Render individual members (not in households)
     TheBill.members.forEach(member => {
         const fullName = `${member.first_name} ${member.last_name}`;
+        
+        // Skip if member is in a household
+        if (householdMembers.has(fullName)) {
+            return;
+        }
+        
         const initials = getInitials(fullName);
         const balanceClass = member.balance > 0 ? 'positive-balance' : 
                             member.balance < 0 ? 'negative-balance' : '';
@@ -581,6 +717,17 @@ function renderMembers() {
         
         membersList.appendChild(memberItem);
     });
+    
+    // Add hint if there are no households yet and more than 1 member
+    if (households.length === 0 && TheBill.members.length >= 2) {
+        const hint = document.createElement('div');
+        hint.className = 'household-hint';
+        hint.innerHTML = `
+            <i class="fas fa-lightbulb"></i>
+            <strong>טיפ:</strong> גרור חבר אל חבר אחר כדי ליצור תא משפחתי וליחד את החובות שלהם
+        `;
+        membersList.appendChild(hint);
+    }
     
     // Update tab counts
     updateTabCounts();
@@ -618,52 +765,66 @@ function renderPayments() {
     });
 }
 
-function renderGroupTransfers() {
+async function renderGroupTransfers() {
     const transfersList = document.getElementById('transfers-list');
     if (!transfersList) return;
     
     transfersList.innerHTML = '';
     
-    // Get transfers
-    API.getTransfers(TheBill.currentGroup.name)
-        .then(transfers => {
-            if (!transfers || transfers.length === 0) {
-                transfersList.innerHTML = '<div class="card"><p class="text-center">כל החשבונות מאוזנים. אין צורך בהעברות כספים.</p></div>';
-                return;
-            }
-            
-            // Create a card for all transfers
-            const transfersCard = document.createElement('div');
-            transfersCard.className = 'card';
-            
-            const cardHeader = document.createElement('div');
-            cardHeader.className = 'card-header';
-            cardHeader.innerHTML = '<h4 class="card-title">העברות מומלצות</h4>';
-            transfersCard.appendChild(cardHeader);
-            
-            const cardBody = document.createElement('div');
-            cardBody.className = 'card-body';
-            
-            // Add each transfer as an item in the card
-            transfers.forEach(transfer => {
-                const transferItem = document.createElement('div');
-                transferItem.className = 'transfer-item';
-                transferItem.innerHTML = `
-                    <div class="transfer-from">${transfer.from}</div>
-                    <div class="transfer-arrow">→</div>
-                    <div class="transfer-to">${transfer.to}</div>
-                    <div class="transfer-amount">${formatCurrency(transfer.amount)}</div>
-                `;
-                cardBody.appendChild(transferItem);
-            });
-            
-            transfersCard.appendChild(cardBody);
-            transfersList.appendChild(transfersCard);
-        })
-        .catch(error => {
-            console.error("Error rendering transfers:", error);
-            showError("שגיאה בטעינת העברות כספים. אנא נסה שנית.");
+    try {
+        // Get transfers and households
+        const transfers = await API.getTransfers(TheBill.currentGroup.name);
+        const households = await API.getHouseholds(TheBill.currentGroup.name);
+        
+        // Create a map of household IDs to household names
+        const householdMap = new Map();
+        households.forEach(household => {
+            householdMap.set(household.id, household.name);
         });
+        
+        if (!transfers || transfers.length === 0) {
+            transfersList.innerHTML = '<div class="card"><p class="text-center">כל החשבונות מאוזנים. אין צורך בהעברות כספים.</p></div>';
+            return;
+        }
+        
+        // Create a card for all transfers
+        const transfersCard = document.createElement('div');
+        transfersCard.className = 'card';
+        
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'card-header';
+        cardHeader.innerHTML = '<h4 class="card-title">העברות מומלצות</h4>';
+        transfersCard.appendChild(cardHeader);
+        
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        
+        // Add each transfer as an item in the card
+        transfers.forEach(transfer => {
+            // Check if from/to are households
+            const fromIsHousehold = householdMap.has(transfer.from_id);
+            const toIsHousehold = householdMap.has(transfer.to_id);
+            
+            const fromIcon = fromIsHousehold ? '🏠 ' : '';
+            const toIcon = toIsHousehold ? '🏠 ' : '';
+            
+            const transferItem = document.createElement('div');
+            transferItem.className = 'transfer-item';
+            transferItem.innerHTML = `
+                <div class="transfer-from">${fromIcon}${transfer.from}</div>
+                <div class="transfer-arrow">→</div>
+                <div class="transfer-to">${toIcon}${transfer.to}</div>
+                <div class="transfer-amount">${formatCurrency(transfer.amount)}</div>
+            `;
+            cardBody.appendChild(transferItem);
+        });
+        
+        transfersCard.appendChild(cardBody);
+        transfersList.appendChild(transfersCard);
+    } catch (error) {
+        console.error("Error rendering transfers:", error);
+        showError("שגיאה בטעינת העברות כספים. אנא נסה שנית.");
+    }
 }
 
 // Format date to localized string
@@ -1410,7 +1571,7 @@ function initializeEventListeners() {
 
 // Generate detailed text summaries for all members
 async function generateMembersSummary() {
-    if (!TheBill.currentGroup || !TheBill.members || !TheBill.members.length === 0) {
+    if (!TheBill.currentGroup || !TheBill.members || TheBill.members.length === 0) {
         throw new Error("אין נתונים להצגה");
     }
     
@@ -1418,15 +1579,24 @@ async function generateMembersSummary() {
     let allMembersSummary = `📊 סיכום תשלומים לקבוצה: ${groupName} 📊\n`;
     allMembersSummary += `${new Date().toLocaleDateString('he-IL')}\n\n`;
     
-    // Get all transfers
+    // Get all transfers and households
     const transfers = await API.getTransfers(groupName);
+    const households = await API.getHouseholds(groupName);
+    
+    // Track which members are in households
+    const householdMembers = new Set();
+    const householdMap = new Map(); // household.id -> household
+    households.forEach(household => {
+        householdMap.set(household.id, household);
+        household.member_full_names.forEach(name => householdMembers.add(name));
+    });
     
     // Calculate group totals
     let totalPaid = 0;
     let totalDue = 0;
     let totalToReceive = 0;
     
-    // Process each member
+    // Process each member for group totals
     for (const member of TheBill.members) {
         const fullName = `${member.first_name} ${member.last_name}`;
         const memberSummary = await API.getMemberSummary(groupName, fullName);
@@ -1438,13 +1608,32 @@ async function generateMembersSummary() {
         }
         totalPaid += memberPaid;
         
-        // Track amounts to pay or receive
-        if (member.balance < 0) {
-            totalDue += Math.abs(member.balance);
-        } else if (member.balance > 0) {
-            totalToReceive += member.balance;
+        // Track amounts to pay or receive (only count once per household or individual)
+        if (!householdMembers.has(fullName)) {
+            if (member.balance < 0) {
+                totalDue += Math.abs(member.balance);
+            } else if (member.balance > 0) {
+                totalToReceive += member.balance;
+            }
         }
     }
+    
+    // Add household balances to totals
+    households.forEach(household => {
+        let householdBalance = 0;
+        household.member_full_names.forEach(memberName => {
+            const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+            if (member) {
+                householdBalance += member.balance || 0;
+            }
+        });
+        
+        if (householdBalance < 0) {
+            totalDue += Math.abs(householdBalance);
+        } else if (householdBalance > 0) {
+            totalToReceive += householdBalance;
+        }
+    });
     
     // Add overall group summary
     allMembersSummary += `🔸 סה״כ הוצאות בקבוצה: ${formatCurrency(totalPaid)}\n`;
@@ -1452,9 +1641,81 @@ async function generateMembersSummary() {
     allMembersSummary += `🔸 סה״כ לקבלה: ${formatCurrency(totalToReceive)}\n\n`;
     allMembersSummary += `--- פירוט לפי חבר ---\n\n`;
     
-    // Process each member
+    // Process households first
+    for (const household of households) {
+        allMembersSummary += `👤 ${household.name}\n`;
+        
+        // Calculate total balance for household
+        let totalHouseholdBalance = 0;
+        let totalHouseholdPaid = 0;
+        
+        for (const memberName of household.member_full_names) {
+            const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+            if (member) {
+                totalHouseholdBalance += member.balance || 0;
+                
+                // Get member summary to calculate total paid
+                const memberSummary = await API.getMemberSummary(groupName, memberName);
+                if (memberSummary.related_payments.paid_by_member && memberSummary.related_payments.paid_by_member.length > 0) {
+                    const memberPaid = memberSummary.related_payments.paid_by_member.reduce((total, payment) => total + payment.amount, 0);
+                    totalHouseholdPaid += memberPaid;
+                }
+            }
+        }
+        
+        // Add balance information
+        if (totalHouseholdBalance > 0) {
+            allMembersSummary += `💰 מאזן: ${formatCurrency(totalHouseholdBalance)} (לקבל)\n`;
+        } else if (totalHouseholdBalance < 0) {
+            allMembersSummary += `💸 מאזן: ${formatCurrency(totalHouseholdBalance)} (לשלם)\n`;
+        } else {
+            allMembersSummary += `⚖️ מאזן: ${formatCurrency(totalHouseholdBalance)} (מאוזן)\n`;
+        }
+        
+        if (totalHouseholdPaid > 0) {
+            allMembersSummary += `📥 סה״כ שולם: ${formatCurrency(totalHouseholdPaid)}\n`;
+        }
+        
+        // Get transfers for this household
+        const householdTransfers = transfers.filter(t => 
+            t.from_id === household.id || t.to_id === household.id
+        );
+        
+        // Add payment details
+        const paysTo = householdTransfers.filter(t => t.from_id === household.id);
+        if (paysTo.length > 0) {
+            allMembersSummary += `📤 לשלם:\n`;
+            let totalToPay = 0;
+            paysTo.forEach(transfer => {
+                allMembersSummary += `   • ל${transfer.to}: ${formatCurrency(transfer.amount)}\n`;
+                totalToPay += transfer.amount;
+            });
+            allMembersSummary += `   • סה״כ לשלם: ${formatCurrency(totalToPay)}\n`;
+        }
+        
+        const receivesFrom = householdTransfers.filter(t => t.to_id === household.id);
+        if (receivesFrom.length > 0) {
+            allMembersSummary += `📥 לקבל:\n`;
+            let totalToReceive = 0;
+            receivesFrom.forEach(transfer => {
+                allMembersSummary += `   • מ${transfer.from}: ${formatCurrency(transfer.amount)}\n`;
+                totalToReceive += transfer.amount;
+            });
+            allMembersSummary += `   • סה״כ לקבל: ${formatCurrency(totalToReceive)}\n`;
+        }
+        
+        allMembersSummary += `\n`;
+    }
+    
+    // Process individual members (not in households)
     for (const member of TheBill.members) {
         const fullName = `${member.first_name} ${member.last_name}`;
+        
+        // Skip if member is in a household
+        if (householdMembers.has(fullName)) {
+            continue;
+        }
+        
         const memberSummary = await API.getMemberSummary(groupName, fullName);
         
         allMembersSummary += `👤 ${fullName}\n`;
@@ -1500,9 +1761,109 @@ async function generateMembersSummary() {
     }
     
     allMembersSummary += `----------------------------------\n`;
-    allMembersSummary += `הופק באמצעות The bill`;
+    allMembersSummary += `הופק באמצעות TheBill`;
     
     return allMembersSummary;
+}
+
+async function generateHouseholdSummary(household) {
+    if (!TheBill.currentGroup || !household) {
+        throw new Error("אין נתונים להצגה");
+    }
+    
+    const groupName = TheBill.currentGroup.name;
+    let summary = `🏠 סיכום תשלומים לתא משפחתי: ${household.name} 🏠\n`;
+    summary += `קבוצה: ${groupName}\n`;
+    summary += `${new Date().toLocaleDateString('he-IL')}\n\n`;
+    
+    summary += `👨‍👩‍👧‍👦 חברי התא:\n`;
+    household.member_full_names.forEach(name => {
+        summary += `   • ${name}\n`;
+    });
+    summary += `\n`;
+    
+    // Calculate total balance for household
+    let totalHouseholdBalance = 0;
+    let totalHouseholdPaid = 0;
+    
+    for (const memberName of household.member_full_names) {
+        const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+        if (member) {
+            totalHouseholdBalance += member.balance || 0;
+            
+            // Get member summary to calculate total paid
+            const memberSummary = await API.getMemberSummary(groupName, memberName);
+            if (memberSummary.related_payments.paid_by_member && memberSummary.related_payments.paid_by_member.length > 0) {
+                const memberPaid = memberSummary.related_payments.paid_by_member.reduce((total, payment) => total + payment.amount, 0);
+                totalHouseholdPaid += memberPaid;
+            }
+        }
+    }
+    
+    summary += `💰 מאזן כולל של התא: ${formatCurrency(totalHouseholdBalance)}`;
+    if (totalHouseholdBalance > 0) {
+        summary += ` (לקבל)\n`;
+    } else if (totalHouseholdBalance < 0) {
+        summary += ` (לשלם)\n`;
+    } else {
+        summary += ` (מאוזן)\n`;
+    }
+    
+    summary += `📥 סה״כ שולם על ידי התא: ${formatCurrency(totalHouseholdPaid)}\n\n`;
+    
+    // Get transfers
+    const transfers = await API.getTransfers(groupName);
+    
+    // Filter transfers relevant to this household
+    const householdTransfers = transfers.filter(t => 
+        t.from_id === household.id || t.to_id === household.id
+    );
+    
+    if (householdTransfers.length > 0) {
+        summary += `--- העברות מומלצות ---\n\n`;
+        
+        householdTransfers.forEach(transfer => {
+            if (transfer.from_id === household.id) {
+                summary += `📤 ${household.name} → ${transfer.to}: ${formatCurrency(transfer.amount)}\n`;
+            } else if (transfer.to_id === household.id) {
+                summary += `📥 ${transfer.from} → ${household.name}: ${formatCurrency(transfer.amount)}\n`;
+            }
+        });
+    } else {
+        summary += `✅ התא מאוזן - אין צורך בהעברות כספים\n`;
+    }
+    
+    summary += `\n----------------------------------\n`;
+    summary += `פירוט לפי חבר בתא:\n\n`;
+    
+    // Add individual member details
+    for (const memberName of household.member_full_names) {
+        const member = TheBill.members.find(m => `${m.first_name} ${m.last_name}` === memberName);
+        if (!member) continue;
+        
+        const memberSummary = await API.getMemberSummary(groupName, memberName);
+        
+        summary += `👤 ${memberName}\n`;
+        summary += `⚖️ מאזן אישי: ${formatCurrency(member.balance)}\n`;
+        
+        // Get total paid by this member
+        if (memberSummary.related_payments.paid_by_member && memberSummary.related_payments.paid_by_member.length > 0) {
+            const memberPaid = memberSummary.related_payments.paid_by_member.reduce((total, payment) => total + payment.amount, 0);
+            summary += `📥 שולם: ${formatCurrency(memberPaid)}\n`;
+            
+            summary += `   תשלומים:\n`;
+            memberSummary.related_payments.paid_by_member.forEach(payment => {
+                summary += `   • ${payment.title}: ${formatCurrency(payment.amount)}\n`;
+            });
+        }
+        
+        summary += `\n`;
+    }
+    
+    summary += `----------------------------------\n`;
+    summary += `הופק באמצעות TheBill`;
+    
+    return summary;
 }
 
 // Copy text to clipboard
@@ -1590,11 +1951,88 @@ function handleDrop(e) {
         const fromMember = draggedMember.dataset.member;
         const toMember = this.dataset.member;
         
-        // Show confirmation modal
-        showMergeMembersModal(fromMember, toMember);
+        // Show household creation modal instead of merge modal
+        showCreateHouseholdModal(fromMember, toMember);
     }
     
     return false;
+}
+
+function showCreateHouseholdModal(member1, member2) {
+    // Populate modal with member info
+    document.getElementById('household-member1-name').textContent = member1;
+    document.getElementById('household-member2-name').textContent = member2;
+    
+    // Set avatars
+    document.getElementById('household-member1-avatar').textContent = getInitials(member1);
+    document.getElementById('household-member2-avatar').textContent = getInitials(member2);
+    
+    // Clear previous household name
+    document.getElementById('household-name-input').value = '';
+    
+    // Setup confirmation button
+    const confirmBtn = document.getElementById('confirm-household-btn');
+    confirmBtn.onclick = async () => {
+        try {
+            const householdName = document.getElementById('household-name-input').value.trim();
+            await createHousehold(member1, member2, householdName);
+            closeModal('create-household-modal');
+            showSuccess(`תא משפחתי נוצר בהצלחה! 🏠`);
+        } catch (error) {
+            showError(error.message || "שגיאה ביצירת תא משפחתי");
+        }
+    };
+    
+    // Open the modal
+    openModal('create-household-modal');
+}
+
+async function createHousehold(member1, member2, name = '') {
+    try {
+        if (!TheBill.currentGroup) {
+            throw new Error("לא נבחרה קבוצה");
+        }
+        
+        console.log(`Creating household with ${member1} and ${member2}`);
+        
+        const household = await API.createHousehold(
+            TheBill.currentGroup.name,
+            [member1, member2],
+            name
+        );
+        
+        console.log("Household created:", household);
+        
+        // Reload group data to reflect the new household
+        await loadGroup(TheBill.currentGroup.name);
+        
+        return household;
+    } catch (error) {
+        console.error("Error creating household:", error);
+        throw error;
+    }
+}
+
+async function deleteHousehold(householdId) {
+    try {
+        if (!TheBill.currentGroup) {
+            throw new Error("לא נבחרה קבוצה");
+        }
+        
+        console.log(`Deleting household ${householdId}`);
+        
+        await API.deleteHousehold(TheBill.currentGroup.name, householdId);
+        
+        console.log("Household deleted successfully");
+        
+        // Reload group data
+        await loadGroup(TheBill.currentGroup.name);
+        showSuccess("תא משפחתי הוסר בהצלחה");
+        
+    } catch (error) {
+        console.error("Error deleting household:", error);
+        showError(error.message || "שגיאה במחיקת תא משפחתי");
+    }
 }
 
 function showMergeMembersModal(fromMember, toMember) {

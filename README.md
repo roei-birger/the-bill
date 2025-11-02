@@ -6,11 +6,12 @@ An application for managing shared expenses in groups, with emphasis on minimizi
 
 - **Group Management**: Create, edit and delete groups for shared expenses
 - **Member Management**: Add, edit and remove group members
+- **Household Units**: Create economic units by grouping members (couples, families) whose debts and credits are combined
 - **Payment Tracking**: Record payments made by group members
 - **Smart Balance Calculation**: Automatically calculate balances and minimize required money transfers
 - **Detailed Reports**: View detailed breakdown of expenses and transfers
-- **Data Export**: Export financial data to JSON or CSV format
-- **Member Merging**: Ability to merge members who represent a single economic unit (couple, family, etc.)
+- **Data Export**: Export financial data to JSON or CSV format, with dedicated export for household units
+- **Modern Glass Morphism UI**: Beautiful gradient design with icon rain animation in header
 
 ## Detailed User Guide
 
@@ -48,12 +49,20 @@ An application for managing shared expenses in groups, with emphasis on minimizi
    
 5. **Removing a Member**:
    - Click on the member you want to remove
-   - Click "Remove" (only possible when the member's balance is 0)
+   - Click "Remove"
+   - The member will be removed along with all their payments and participant records
    
-6. **Merging Members**:
+6. **Creating Household Units** (🏠 Family/Economic Units):
    - Drag one member toward another member
-   - Confirm the merge action in the window that opens
-   - The members will be merged into a single economic unit
+   - A creation window will open for a household unit
+   - Enter an optional name for the unit (e.g., "Cohen Family") or leave for automatic name
+   - Click "Create Household Unit"
+   - **How it works**: When adding payments - you still select each member individually. In balance calculation - their debts are combined into one unit
+   - The unit is displayed with a purple gradient background and 🏠 icon
+   
+7. **Deleting a Household Unit**:
+   - Click the red X button in the household unit container
+   - The members will return to being independent individuals
 
 ### Managing Payments
 
@@ -82,6 +91,7 @@ An application for managing shared expenses in groups, with emphasis on minimizi
 1. Select a group from the group list
 2. Go to the "Balance" tab
 3. View the list of recommended transfers for complete balancing
+4. Household units are displayed with 🏠 icon in the transfer list
 
 ### Exporting Data
 
@@ -89,9 +99,25 @@ An application for managing shared expenses in groups, with emphasis on minimizi
 2. Go to the "Balance" tab
 3. **Exporting Summary to Members**:
    - Click "Export Summary to Members"
-   - The summary will be displayed in a separate window and can be copied to the clipboard
+   - The summary displays household units with their combined balances
+   - Example format:
+     ```
+     📊 Summary for Group: Independence Day 2025 📊
+     
+     👤 Noa and Roei
+     💸 Balance: -32.00 ₪ (to pay)
+     📥 Total paid: 25.00 ₪
+     📤 To pay:
+        • To Avital: 32.00 ₪
+     ```
+   - The summary can be copied to clipboard
    
-4. **Exporting Group Data**:
+4. **Exporting Household Unit Summary**:
+   - In the "Balance" tab, dedicated export buttons appear for each household unit
+   - Click "Export Summary: [Household Name]"
+   - A dedicated summary for that household will be displayed with detailed breakdown
+   
+5. **Exporting Group Data**:
    - Click "Export Data"
    - Choose format (JSON or CSV)
    - The file will be saved in the data folder
@@ -110,9 +136,15 @@ An application for managing shared expenses in groups, with emphasis on minimizi
 
 ## Technical Development
 
-- **Front-end**: HTML, CSS, JavaScript
-- **Back-end**: Python with Eel for JavaScript communication
-- **Data storage**: Local JSON files
+- **Front-end**: HTML5, CSS3 with Glass Morphism design, Vanilla JavaScript
+- **Back-end**: Python with Flask REST API
+- **Data storage**: Local JSON files with automatic persistence
+- **Features**: 
+  - Drag & Drop API for household creation
+  - Async/await for smooth data loading
+  - Icon rain animation in header (💵💰🍕🍺🎉 and more)
+  - Responsive design with gradient backgrounds
+  - Real-time balance calculations with household aggregation
 
 ## License
 

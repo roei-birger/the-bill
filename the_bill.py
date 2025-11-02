@@ -2,8 +2,47 @@ import json
 import os
 import csv
 import math
+import uuid
 from datetime import datetime
 from typing import List, Dict, Tuple, Set, Optional
+
+
+class Household:
+    """Represents a household unit - a group of members who share finances"""
+    def __init__(self, member_full_names: List[str], name: str = ""):
+        self.id = str(uuid.uuid4())
+        self.member_full_names = member_full_names  # List of full names of members
+        self.name = name or self._generate_default_name()
+        self.created_at = datetime.now()
+        self.active = True
+
+    def _generate_default_name(self) -> str:
+        """Generate a default name for the household"""
+        if len(self.member_full_names) == 2:
+            return f"{self.member_full_names[0]}♥{self.member_full_names[1]}"
+        elif len(self.member_full_names) > 2:
+            return f"משפחת {self.member_full_names[0].split()[0]}"
+        return "תא משפחתי"
+
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'member_full_names': self.member_full_names,
+            'name': self.name,
+            'created_at': self.created_at.isoformat(),
+            'active': self.active
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Household':
+        household = cls(
+            data['member_full_names'],
+            data.get('name', '')
+        )
+        household.id = data['id']
+        household.created_at = datetime.fromisoformat(data['created_at'])
+        household.active = data.get('active', True)
+        return household
 
 
 class Member:
@@ -75,6 +114,7 @@ class Group:
         self.name = name
         self.members: List[Member] = []
         self.payments: List[Payment] = []
+        self.households: List[Household] = []  # List of household units
         self.admin_name = admin_name  # Full name of the group admin
         self.any_member_can_add_payments = True  # Default permission setting
         self.permissions: Dict[str, bool] = {}  # Permissions for each member
@@ -139,25 +179,40 @@ class Group:
         return member
 
     def remove_member(self, full_name: str) -> bool:
-        """Remove a member from the group if they have no debts/credits"""
+        """Remove a member from the group along with all their payments"""
         member = self._get_member_by_name(full_name)
         if not member:
             raise ValueError(f"Member {full_name} not found")
-            
-        # Calculate current balance for the member
-        self._calculate_balances()
-            
-        # Check if the member has a non-zero balance
-        if member.balance != 0:
-            raise ValueError(f"Cannot remove member {full_name} because they have an outstanding balance of {member.balance}")
-            
+        
+        # Remove all payments made by this member
+        self.payments = [p for p in self.payments if p.payer_name != full_name]
+        
+        # Remove this member from all payment participants
+        for payment in self.payments:
+            if full_name in payment.participants:
+                payment.participants.remove(full_name)
+        
+        # Remove payments with no participants
+        self.payments = [p for p in self.payments if len(p.participants) > 0]
+        
+        # Remove member from any household
+        for household in self.households:
+            if full_name in household.member_full_names:
+                household.member_full_names.remove(full_name)
+                # If household has less than 2 members, deactivate it
+                if len(household.member_full_names) < 2:
+                    household.active = False
+        
         # Remove the member
         self.members.remove(member)
         
         # If the admin was removed, assign a new admin if possible
         if self.admin_name == full_name and self.members:
             self.admin_name = self.members[0].full_name
-            
+        
+        # Recalculate balances after all removals
+        self._calculate_balances()
+        
         return True
 
     def add_payment(self, title: str, amount: float, payer_name: str, participant_names: List[str], description: str = "") -> Payment:
@@ -233,6 +288,65 @@ class Group:
         
         return True
 
+    def create_household(self, member_full_names: List[str], name: str = "") -> Household:
+        """Create a household unit from multiple members"""
+        # Validate that all members exist
+        for member_name in member_full_names:
+            if not self._get_member_by_name(member_name):
+                raise ValueError(f"Member {member_name} not found in group")
+        
+        # Check that members are not already in a household
+        for household in self.households:
+            if household.active:
+                for member_name in member_full_names:
+                    if member_name in household.member_full_names:
+                        raise ValueError(f"Member {member_name} is already in household {household.name}")
+        
+        # Require at least 2 members
+        if len(member_full_names) < 2:
+            raise ValueError("Household must contain at least 2 members")
+        
+        # Create the household
+        household = Household(member_full_names, name)
+        self.households.append(household)
+        
+        # Recalculate balances to reflect the new household
+        self._calculate_balances()
+        
+        return household
+
+    def delete_household(self, household_id: str) -> bool:
+        """Delete (deactivate) a household unit"""
+        household = self._get_household_by_id(household_id)
+        if not household:
+            raise ValueError(f"Household with ID {household_id} not found")
+        
+        # Mark as inactive (soft delete)
+        household.active = False
+        
+        # Recalculate balances
+        self._calculate_balances()
+        
+        return True
+
+    def get_active_households(self) -> List[Household]:
+        """Get all active households"""
+        return [h for h in self.households if h.active]
+
+    def _get_household_by_id(self, household_id: str) -> Optional[Household]:
+        """Find a household by its ID"""
+        for household in self.households:
+            if household.id == household_id:
+                return household
+        return None
+
+    def _get_household_for_member(self, member_full_name: str) -> Optional[Household]:
+        """Find the active household that a member belongs to"""
+        for household in self.households:
+            if household.active and member_full_name in household.member_full_names:
+                return household
+        return None
+
     def _get_member_by_name(self, full_name: str) -> Optional[Member]:
         """Find a member by their full name"""
         for member in self.members:
@@ -292,52 +406,90 @@ class Group:
                     participant.balance -= amount_per_person
 
     def calculate_minimized_transfers(self) -> List[Dict]:
-        """Calculate transfers that minimize number of transactions"""
+        """Calculate transfers that minimize number of transactions, considering households"""
         # First calculate balances
         self._calculate_balances()
         
-        # Separate members into those who need to pay and those who need to receive
-        payers = []  # Members who have negative balance (need to pay)
-        receivers = []  # Members who have positive balance (need to receive)
+        # Create a dictionary to track balances (individuals and households)
+        balances = {}
         
+        # Get active households
+        active_households = self.get_active_households()
+        
+        # Track which members are in households
+        household_members = set()
+        for household in active_households:
+            household_members.update(household.member_full_names)
+        
+        # Calculate household balances (sum of members' balances)
+        for household in active_households:
+            household_balance = 0
+            for member_name in household.member_full_names:
+                member = self._get_member_by_name(member_name)
+                if member:
+                    household_balance += member.balance
+            
+            # Use household ID as key for the balance dictionary
+            balances[household.id] = {
+                'balance': household_balance,
+                'display_name': household.name,
+                'type': 'household'
+            }
+        
+        # Add individual members (not in any household)
         for member in self.members:
-            if member.balance < -0.01:  # Using a threshold to handle floating point errors
-                payers.append((member.full_name, abs(member.balance)))
-            elif member.balance > 0.01:
-                receivers.append((member.full_name, member.balance))
+            if member.full_name not in household_members:
+                balances[member.full_name] = {
+                    'balance': member.balance,
+                    'display_name': member.full_name,
+                    'type': 'individual'
+                }
+        
+        # Separate into payers and receivers
+        payers = []  # Those who have negative balance (need to pay)
+        receivers = []  # Those who have positive balance (need to receive)
+        
+        for entity_id, entity_data in balances.items():
+            balance = entity_data['balance']
+            if balance < -0.01:  # Using a threshold to handle floating point errors
+                payers.append((entity_id, entity_data['display_name'], abs(balance)))
+            elif balance > 0.01:
+                receivers.append((entity_id, entity_data['display_name'], balance))
         
         # Sort both lists by amount (largest first)
-        payers.sort(key=lambda x: x[1], reverse=True)
-        receivers.sort(key=lambda x: x[1], reverse=True)
+        payers.sort(key=lambda x: x[2], reverse=True)
+        receivers.sort(key=lambda x: x[2], reverse=True)
         
         transfers = []
         
         # Process all debts
         i, j = 0, 0
         while i < len(payers) and j < len(receivers):
-            payer_name, payer_amount = payers[i]
-            receiver_name, receiver_amount = receivers[j]
+            payer_id, payer_name, payer_amount = payers[i]
+            receiver_id, receiver_name, receiver_amount = receivers[j]
             
-            # Determine the transfer amount (minimum of what the payer owes and what the receiver is owed)
+            # Determine the transfer amount
             transfer_amount = round(min(payer_amount, receiver_amount), 2)
             
             # Add this transfer
             transfers.append({
                 "from": payer_name,
                 "to": receiver_name,
-                "amount": transfer_amount
+                "amount": transfer_amount,
+                "from_id": payer_id,
+                "to_id": receiver_id
             })
             
             # Update remaining amounts
-            payers[i] = (payer_name, round(payer_amount - transfer_amount, 2))
-            receivers[j] = (receiver_name, round(receiver_amount - transfer_amount, 2))
+            payers[i] = (payer_id, payer_name, round(payer_amount - transfer_amount, 2))
+            receivers[j] = (receiver_id, receiver_name, round(receiver_amount - transfer_amount, 2))
             
             # If a payer has paid all they owe, move to next payer
-            if payers[i][1] < 0.01:
+            if payers[i][2] < 0.01:
                 i += 1
                 
             # If a receiver has received all they're owed, move to next receiver
-            if receivers[j][1] < 0.01:
+            if receivers[j][2] < 0.01:
                 j += 1
         
         return transfers
@@ -464,6 +616,7 @@ class Group:
             'any_member_can_add_payments': self.any_member_can_add_payments,
             'members': [member.to_dict() for member in self.members],
             'payments': [payment.to_dict() for payment in self.payments],
+            'households': [household.to_dict() for household in self.households],
             'permissions': self.permissions,
         }
 
@@ -482,6 +635,11 @@ class Group:
         for payment_data in data.get('payments', []):
             payment = Payment.from_dict(payment_data)
             group.payments.append(payment)
+        
+        # Add households
+        for household_data in data.get('households', []):
+            household = Household.from_dict(household_data)
+            group.households.append(household)
             
         # Calculate balances
         group._calculate_balances()
