@@ -8,11 +8,30 @@
         {
           "first_name": "John",
           "last_name": "Doe",
-          "balance": 0
+          "balance": 60.0
+        },
+        {
+          "first_name": "נסיון",
+          "last_name": "בירגר",
+          "balance": -60.0
         }
       ],
-      "payments": []
+      "payments": [
+        {
+          "id": "1762064576-אוכל-אביאל",
+          "title": "אוכל אביאל",
+          "amount": 120,
+          "payer_name": "John Doe",
+          "participants": [
+            "John Doe",
+            "נסיון בירגר"
+          ],
+          "description": "",
+          "date": "2025-11-02T08:22:56.015790"
+        }
+      ],
+      "permissions": {}
     }
   ],
-  "last_updated": "2025-03-17T16:02:05.022767"
+  "last_updated": "2025-11-02T08:23:09.678712"
 }

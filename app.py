@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, url_for
+from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 import os
 import logging
 from the_bill import (
@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger('TheBill')
 
 # Configure Flask appעבור קבצים סטטיים
-app = Flask(__name__, static_folder="web", template_folder="web")
+app = Flask(__name__, static_folder="web", static_url_path="/static", template_folder="web")
 
 @app.route('/')
 def home():

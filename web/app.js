@@ -373,6 +373,9 @@ function showSuccess(message) {
         successContainer.textContent = message;
         successContainer.style.display = 'block';
         
+        // Add confetti effect
+        createConfetti();
+        
         // Hide after 5 seconds
         setTimeout(() => {
             successContainer.style.display = 'none';
@@ -380,6 +383,57 @@ function showSuccess(message) {
     } else {
         alert("הצלחה: " + message);
     }
+}
+
+// Create confetti effect
+function createConfetti() {
+    const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#fa709a', '#fee140'];
+    
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = Math.random() * 10 + 5;
+        const left = Math.random() * window.innerWidth;
+        const animationDuration = Math.random() * 3 + 2;
+        const rotation = Math.random() * 360;
+        
+        confetti.style.cssText = `
+            position: fixed;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            left: ${left}px;
+            top: -20px;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 1;
+            transform: rotate(${rotation}deg);
+            animation: confettiFall ${animationDuration}s ease-out forwards;
+        `;
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), animationDuration * 1000);
+    }
+}
+
+// Add confetti animation
+if (!document.getElementById('confetti-style')) {
+    const confettiStyle = document.createElement('style');
+    confettiStyle.id = 'confetti-style';
+    confettiStyle.textContent = `
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(${window.innerHeight + 100}px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(confettiStyle);
 }
 
 // Revert showScreen to the original implementation
@@ -408,9 +462,11 @@ function renderGroupsList() {
         return;
     }
     
-    TheBill.groups.forEach(group => {
+    TheBill.groups.forEach((group, index) => {
         const groupItem = document.createElement('div');
         groupItem.className = 'group-item';
+        groupItem.style.animationDelay = `${index * 0.1}s`;
+        groupItem.style.animation = 'fadeInUp 0.5s ease-out forwards';
         groupItem.innerHTML = `
             <div class="group-item-info">
                 <h4 class="group-name">${group.name}</h4>
@@ -419,10 +475,49 @@ function renderGroupsList() {
         `;
         
         // Add click event to open group
-        groupItem.addEventListener('click', () => loadGroup(group.name));
+        groupItem.addEventListener('click', () => {
+            groupItem.style.transform = 'scale(0.95)';
+            setTimeout(() => loadGroup(group.name), 150);
+        });
+        
+        // Add 3D tilt effect on mouse move
+        groupItem.addEventListener('mousemove', (e) => {
+            const rect = groupItem.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            groupItem.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateX(-5px)`;
+        });
+        
+        groupItem.addEventListener('mouseleave', () => {
+            groupItem.style.transform = '';
+        });
         
         groupsList.appendChild(groupItem);
     });
+}
+
+// Add fadeInUp animation
+if (!document.getElementById('fade-in-up-style')) {
+    const fadeInUpStyle = document.createElement('style');
+    fadeInUpStyle.id = 'fade-in-up-style';
+    fadeInUpStyle.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(fadeInUpStyle);
 }
 
 // Update tab counts
@@ -1564,14 +1659,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             console.warn("Loading screen element not found!");
         }
-        
-        // הסרת הבדיקה של Eel שכבר אינה רלוונטית
-        // במקום:
-        /*
-        if (typeof eel === 'undefined') {
-            throw new Error("eel.js is not loaded. Make sure the backend is running.");
-        }
-        */
         
         console.log("Loading groups from backend...");
         // Load groups

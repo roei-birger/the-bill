@@ -4,7 +4,460 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The bill - ניהול הוצאות משותפות</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/modern-override.css">
+    <style>
+        /* 🎨 ULTRA MODERN DESIGN 2.0 */
+        
+        /* Global Enhancements */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-attachment: fixed !important;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        #app-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Animated Header */
+        header {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+            position: sticky !important;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        header h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3rem !important;
+            font-weight: 800 !important;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: none !important;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(20deg); }
+        }
+        
+        header h2 {
+            color: #667eea !important;
+            font-weight: 500 !important;
+            opacity: 0.8;
+        }
+        
+        /* Glass Morphism Main Container */
+        main {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+            animation: slideUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Ultra Modern Buttons */
+        .primary-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            padding: 14px 32px !important;
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+            border-radius: 50px !important;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .primary-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .primary-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .primary-btn:hover {
+            transform: translateY(-5px) scale(1.05) !important;
+            box-shadow: 
+                0 15px 40px rgba(102, 126, 234, 0.6),
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        .primary-btn:active {
+            transform: translateY(-2px) scale(1.02) !important;
+        }
+        
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 2px solid #667eea !important;
+            color: #667eea !important;
+            padding: 12px 28px !important;
+            font-weight: 600 !important;
+            border-radius: 50px !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .secondary-btn:hover {
+            background: #667eea !important;
+            color: white !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4) !important;
+        }
+        
+        .danger-btn {
+            background: linear-gradient(135deg, #ff5252 0%, #f48fb1 100%) !important;
+            border-radius: 50px !important;
+            box-shadow: 0 4px 15px rgba(255, 82, 82, 0.4) !important;
+        }
+        
+        .danger-btn:hover {
+            transform: translateY(-5px) scale(1.05) !important;
+            box-shadow: 0 15px 40px rgba(255, 82, 82, 0.6) !important;
+        }
+        
+        /* Floating Cards with 3D Effect */
+        .group-item,
+        .member-item,
+        .payment-item {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(102, 126, 234, 0.2) !important;
+            border-radius: 20px !important;
+            padding: 24px !important;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        .group-item::after,
+        .member-item::after,
+        .payment-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .group-item:hover::after,
+        .member-item:hover::after,
+        .payment-item:hover::after {
+            left: 100%;
+        }
+        
+        .group-item::before,
+        .member-item::before,
+        .payment-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .group-item:hover,
+        .member-item:hover,
+        .payment-item:hover {
+            transform: translateY(-10px) translateX(10px) rotate(1deg) !important;
+            box-shadow: 
+                0 20px 50px rgba(102, 126, 234, 0.3),
+                0 10px 20px rgba(0, 0, 0, 0.1) !important;
+            border-color: #667eea !important;
+            background: white !important;
+        }
+        
+        .group-item:hover::before,
+        .member-item:hover::before,
+        .payment-item:hover::before {
+            transform: scaleY(1);
+        }
+        
+        /* Glowing Avatar */
+        .member-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                0 0 30px rgba(102, 126, 234, 0.2) !important;
+            animation: avatarPulse 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        @keyframes avatarPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 4px 15px rgba(102, 126, 234, 0.4),
+                    0 0 20px rgba(102, 126, 234, 0.2);
+            }
+            50% {
+                box-shadow: 
+                    0 4px 20px rgba(102, 126, 234, 0.6),
+                    0 0 40px rgba(102, 126, 234, 0.4);
+            }
+        }
+        
+        /* Animated Badge */
+        .count-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4) !important;
+            animation: badgeBounce 2s ease infinite;
+        }
+        
+        @keyframes badgeBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Success Message with Animation */
+        .message.success {
+            background: linear-gradient(135deg, #00c9a7 0%, #00f2fe 100%) !important;
+            border-radius: 15px !important;
+            box-shadow: 0 10px 40px rgba(0, 201, 167, 0.4) !important;
+            animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px) rotate(10deg);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #ff5252 0%, #f48fb1 100%) !important;
+            border-radius: 15px !important;
+            box-shadow: 0 10px 40px rgba(255, 82, 82, 0.4) !important;
+        }
+        
+        /* Glassmorphism Modal */
+        .modal {
+            backdrop-filter: blur(10px) !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 25px !important;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3) !important;
+            animation: modalPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes modalPop {
+            0% {
+                transform: scale(0.5) rotate(-10deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Enhanced Tabs */
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease !important;
+        }
+        
+        .tab-btn.active {
+            color: #667eea !important;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px 3px 0 0;
+            animation: tabSlide 0.3s ease;
+        }
+        
+        @keyframes tabSlide {
+            from {
+                width: 0;
+                left: 50%;
+            }
+            to {
+                width: 100%;
+                left: 0;
+            }
+        }
+        
+        /* Floating Animation for Cards */
+        .group-item,
+        .member-item,
+        .payment-item {
+            animation: cardFloat 3s ease-in-out infinite;
+        }
+        
+        .group-item:nth-child(2n) {
+            animation-delay: 0.5s;
+        }
+        
+        .group-item:nth-child(3n) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes cardFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        /* Loading Screen Enhancement */
+        #loading-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .spinner {
+            width: 60px !important;
+            height: 60px !important;
+            border: 5px solid rgba(255, 255, 255, 0.2) !important;
+            border-top: 5px solid white !important;
+            animation: spin 0.8s linear infinite, pulse 2s ease-in-out infinite !important;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        
+        /* Enhanced Input Fields */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            box-shadow: 
+                0 0 0 4px rgba(102, 126, 234, 0.1),
+                0 5px 15px rgba(102, 126, 234, 0.2) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        
+        /* Hover Glow Effect */
+        .primary-btn,
+        .group-item,
+        .member-item,
+        .payment-item {
+            position: relative;
+        }
+        
+        /* Mobile Responsive Enhancements */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem !important;
+            }
+            
+            .primary-btn {
+                padding: 12px 24px !important;
+                font-size: 0.9rem !important;
+            }
+        }
+    </style>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts - Assistant and Rubik -->
@@ -15,6 +468,11 @@
     <div id="loading-screen">
         <div class="spinner"></div>
         <p>טוען...</p>
+        <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </div>
 
     <!-- Error/Success Messages -->
@@ -452,7 +910,226 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='ui-helpers.js') }}"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="/static/ui-helpers.js"></script>
+    <script src="/static/app.js"></script>
+    <script>
+        // 🎨 Ultra Modern Interactive Effects
+        
+        // Particle Background Effect
+        function createParticles() {
+            const particles = document.createElement('div');
+            particles.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+            `;
+            
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 4 + 2}px;
+                    height: ${Math.random() * 4 + 2}px;
+                    background: rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    top: ${Math.random() * 100}%;
+                    left: ${Math.random() * 100}%;
+                    animation: particleFloat ${Math.random() * 10 + 10}s linear infinite;
+                    animation-delay: ${Math.random() * 5}s;
+                `;
+                particles.appendChild(particle);
+            }
+            
+            document.body.appendChild(particles);
+        }
+        
+        // Add particle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes particleFloat {
+                0% {
+                    transform: translateY(100vh) translateX(0) scale(0);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 1;
+                }
+                90% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100vh) translateX(${Math.random() * 200 - 100}px) scale(1);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes ripple {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Create ripple effect on button clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('primary-btn') || 
+                e.target.classList.contains('secondary-btn')) {
+                const ripple = document.createElement('span');
+                const rect = e.target.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    left: ${x}px;
+                    top: ${y}px;
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                e.target.style.position = 'relative';
+                e.target.style.overflow = 'hidden';
+                e.target.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            }
+        });
+        
+        // Mouse trail effect
+        let mouseTrail = [];
+        document.addEventListener('mousemove', function(e) {
+            const trail = document.createElement('div');
+            trail.style.cssText = `
+                position: fixed;
+                width: 8px;
+                height: 8px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 99999;
+                left: ${e.clientX - 4}px;
+                top: ${e.clientY - 4}px;
+                opacity: 0.6;
+                animation: trailFade 0.5s ease-out forwards;
+            `;
+            
+            document.body.appendChild(trail);
+            mouseTrail.push(trail);
+            
+            if (mouseTrail.length > 10) {
+                const old = mouseTrail.shift();
+                old.remove();
+            }
+            
+            setTimeout(() => trail.remove(), 500);
+        });
+        
+        const trailStyle = document.createElement('style');
+        trailStyle.textContent = `
+            @keyframes trailFade {
+                to {
+                    transform: scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(trailStyle);
+        
+        // Add tilt effect to cards
+        document.addEventListener('mousemove', function(e) {
+            const cards = document.querySelectorAll('.group-item, .member-item, .payment-item');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 10;
+                    const rotateY = (centerX - x) / 10;
+                    
+                    card.style.transform = `
+                        perspective(1000px) 
+                        rotateX(${rotateX}deg) 
+                        rotateY(${rotateY}deg) 
+                        translateY(-10px) 
+                        translateX(10px) 
+                        scale(1.02)
+                    `;
+                }
+            });
+        });
+        
+        document.addEventListener('mouseleave', function(e) {
+            if (e.target.classList.contains('group-item') ||
+                e.target.classList.contains('member-item') ||
+                e.target.classList.contains('payment-item')) {
+                e.target.style.transform = '';
+            }
+        });
+        
+        // Initialize particles on load
+        window.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            console.log('🎨 Ultra Modern Design loaded!');
+        });
+        
+        // Confetti effect for success
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                const colors = ['#667eea', '#764ba2', '#00c9a7', '#ff5252', '#ffc107'];
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: ${Math.random() * 10 + 5}px;
+                    height: ${Math.random() * 10 + 5}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}vw;
+                    top: -20px;
+                    opacity: ${Math.random() * 0.5 + 0.5};
+                    transform: rotate(${Math.random() * 360}deg);
+                    pointer-events: none;
+                    z-index: 99999;
+                    animation: confettiFall ${Math.random() * 3 + 2}s ease-out forwards;
+                `;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+        
+        const confettiStyle = document.createElement('style');
+        confettiStyle.textContent = `
+            @keyframes confettiFall {
+                to {
+                    transform: translateY(100vh) rotate(${Math.random() * 720}deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(confettiStyle);
+        
+        // Override showSuccess to add confetti
+        const originalShowSuccess = window.showSuccess;
+        window.showSuccess = function(message) {
+            if (originalShowSuccess) originalShowSuccess(message);
+            createConfetti();
+        };
+    </script>
 </body>
 </html>

@@ -1,12 +1,53 @@
-// UI Helper functions for TheBill application
+// UI Helper functions for TheBill application - Enhanced
 
-// Toggle dark mode
+// Toggle dark mode with animation
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDarkMode = document.body.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDarkMode);
     updateDarkModeToggle();
+    
+    // Add sparkle effect
+    createSparkles();
 }
+
+// Create sparkles effect
+function createSparkles() {
+    for (let i = 0; i < 20; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.cssText = `
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            left: ${Math.random() * window.innerWidth}px;
+            top: ${Math.random() * window.innerHeight}px;
+            animation: sparkleFloat ${1 + Math.random()}s ease-out forwards;
+        `;
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1500);
+    }
+}
+
+// Add sparkle animation
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+    @keyframes sparkleFloat {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-100px) scale(0);
+        }
+    }
+`;
+document.head.appendChild(styleSheet);
 
 // Update dark mode toggle button appearance
 function updateDarkModeToggle() {
@@ -27,6 +68,32 @@ function applyDarkModePreference() {
         document.body.classList.remove('dark-mode');
     }
     updateDarkModeToggle();
+}
+
+// Add ripple effect to buttons
+function addRippleEffect(e) {
+    const button = e.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.classList.add('ripple');
+    
+    button.appendChild(ripple);
+    
+    setTimeout(() => ripple.remove(), 600);
+}
+
+// Initialize ripple effects on all buttons
+function initRippleEffects() {
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', addRippleEffect);
+    });
 }
 
 // Show a screen and hide others
@@ -158,10 +225,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add UI enhancements
     enhanceUI();
     
+    // Initialize ripple effects
+    initRippleEffects();
+    
     // Setup tab switching
     document.querySelectorAll('.tab-btn').forEach(tab => {
         tab.addEventListener('click', () => {
             switchTab(tab.getAttribute('data-tab'));
+        });
+    });
+    
+    // Add smooth scroll behavior
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     });
 });

@@ -1,28 +1,20 @@
-/* ===================================
-   The Bill - Modern Interactive Design
-   Version 2.0
-   =================================== */
+/* TheBill Application Styles - Modern & Interactive Design */
 
 :root {
-    /* Primary Gradient Colors */
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --accent-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    /* Modern Color Palette */
+    --primary-color: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --secondary-color: #10b981;
+    --accent-color: #f59e0b;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
     
-    /* Solid Colors */
-    --primary-color: #667eea;
-    --primary-dark: #5568d3;
-    --primary-light: #8b9aef;
-    --success-color: #00c9a7;
-    --danger-color: #ff5252;
-    --warning-color: #ffc107;
-    
-    /* Background Colors - Light Mode */
-    --bg-primary: #f5f7fa;
-    --bg-secondary: #ffffff;
-    --bg-card: #ffffff;
-    --bg-hover: #f0f3ff;
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --bg-hover: #f5f7ff;
     
     /* Text Colors */
     --text-primary: #1f2937;
